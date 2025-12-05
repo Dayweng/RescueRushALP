@@ -1,3 +1,4 @@
+import java.util.Scanner;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -26,7 +27,16 @@ class GamePanel extends JPanel implements KeyListener {
     // ===== GAME VARIABLES: put ALL your game data here =====
     public int playerX = 100;
     public int playerY = 100;
-    public int speed = 4;
+    public int speed = 10;
+    public int GameState = 0;
+    /* 
+        Game State List:
+        0 = Main Menu
+        4 = Level Picker Screen
+        1 = Level 1
+        2 = Level 2
+        3 = Level 3 
+    */
 
     // Timer for game loop (public only)
     public Timer timer;
@@ -53,12 +63,17 @@ class GamePanel extends JPanel implements KeyListener {
         super.paintComponent(g);
 
         // background
-        g.setColor(Color.GREEN);
+        g.setColor(Color.BLACK);
         g.fillRect(0, 0, getWidth(), getHeight());
 
         // player
         g.setColor(Color.RED);
         g.fillRect(playerX, playerY, 32, 32);
+    }
+
+    // Game Screens Designs
+    public void MenuScreen(Graphics g) {
+        
     }
 
     // ===== KEY INPUT =====
