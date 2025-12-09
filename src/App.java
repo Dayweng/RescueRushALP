@@ -63,11 +63,11 @@ class GamePanel extends JPanel implements KeyListener {
         super.paintComponent(g);
 
         // background
-        g.setColor(Color.BLACK);
+        g.setColor(Color.WHITE);
         g.fillRect(0, 0, getWidth(), getHeight());
 
         // player
-        g.setColor(Color.RED);
+        g.setColor(Color.BLUE);
         g.fillRect(playerX, playerY, 32, 32);
     }
 
@@ -76,13 +76,13 @@ class GamePanel extends JPanel implements KeyListener {
         
     }
 
-    // ===== KEY INPUT =====
+    // INPUT KEYBOARD
     public void keyPressed(KeyEvent e) {
         int k = e.getKeyCode();
-        if (k == KeyEvent.VK_W) playerY -= speed;
-        if (k == KeyEvent.VK_S) playerY += speed;
-        if (k == KeyEvent.VK_A) playerX -= speed;
-        if (k == KeyEvent.VK_D) playerX += speed;
+        if (k == KeyEvent.VK_W || k == KeyEvent.VK_UP) playerY -= speed;
+        if (k == KeyEvent.VK_S || k == KeyEvent.VK_DOWN) playerY += speed;
+        if (k == KeyEvent.VK_A || k == KeyEvent.VK_LEFT) playerX -= speed;
+        if (k == KeyEvent.VK_D | k == KeyEvent.VK_RIGHT) playerX += speed;
     }
 
     public void keyReleased(KeyEvent e) {}
