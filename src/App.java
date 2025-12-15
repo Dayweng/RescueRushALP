@@ -21,7 +21,7 @@ class GameWindow extends JFrame {
     }
 }
 
-class GamePanel extends JPanel implements KeyListener {
+class GamePanel extends JPanel implements KeyListener, MouseListener {
 
     // ===== GAME VARIABLES: put ALL your game data here =====
     public int playerX = 100;
@@ -43,6 +43,7 @@ class GamePanel extends JPanel implements KeyListener {
     public GamePanel() {
         setFocusable(true);
         addKeyListener(this);
+        addMouseListener(this);
 
         timer = new Timer(16, e -> {
             update();
@@ -50,6 +51,21 @@ class GamePanel extends JPanel implements KeyListener {
         });
         timer.start();
     }
+
+    public void mousePressed(MouseEvent e) {
+        int x = e.getX();
+        int y = e.getY();
+        
+        // Check if button clicked (Start Game button at 540, 600)
+        if (x >= 540 && x <= 740 && y >= 600 && y <= 650) {
+            GameState = 1;  // Switch to Level 1
+        }
+    }
+
+    public void mouseClicked(MouseEvent e) {}
+    public void mouseReleased(MouseEvent e) {}
+    public void mouseEntered(MouseEvent e) {}
+    public void mouseExited(MouseEvent e) {}
 
     // ===== UPDATE GAME LOGIC =====
     public void update() {
@@ -85,6 +101,19 @@ class GamePanel extends JPanel implements KeyListener {
     public void MenuScreen(Graphics g) {
         ImageIcon mainMenuBG = new ImageIcon("C:\\Users\\Darren Wibisono\\Documents\\AlPro Coding\\ALP\\RescueRushALP\\assets\\omusi54tuse91.gif");
         g.drawImage(mainMenuBG.getImage(), 0, 0, getWidth(), getHeight(), this);
+
+        // Draw button
+        int buttonX = 540;
+        int buttonY = 600;
+        int buttonWidth = 200;
+        int buttonHeight = 50;
+        
+        g.setColor(new Color(100, 150, 255));
+        g.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
+        
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 20));
+        g.drawString("Start Game", buttonX + 50, buttonY + 35);
     }
 
     // INPUT KEYBOARD
@@ -93,7 +122,7 @@ class GamePanel extends JPanel implements KeyListener {
         if (k == KeyEvent.VK_W || k == KeyEvent.VK_UP) playerY -= speed;
         if (k == KeyEvent.VK_S || k == KeyEvent.VK_DOWN) playerY += speed;
         if (k == KeyEvent.VK_A || k == KeyEvent.VK_LEFT) playerX -= speed;
-        if (k == KeyEvent.VK_D | k == KeyEvent.VK_RIGHT) playerX += speed;
+        if (k == KeyEvent.VK_D || k == KeyEvent.VK_RIGHT) playerX += speed;
     }
 
     public void keyReleased(KeyEvent e) {}
