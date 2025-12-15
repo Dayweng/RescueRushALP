@@ -1,7 +1,6 @@
-import java.util.Scanner;
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import javax.swing.*;
 
 public class App {
     public static void main(String[] args) {
@@ -54,7 +53,7 @@ class GamePanel extends JPanel implements KeyListener {
 
     // ===== UPDATE GAME LOGIC =====
     public void update() {
-        // move enemies, physics, collision, etc.
+        
     }
 
     // ===== DRAW EVERYTHING HERE =====
@@ -62,18 +61,30 @@ class GamePanel extends JPanel implements KeyListener {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        // background
-        g.setColor(Color.WHITE);
-        g.fillRect(0, 0, getWidth(), getHeight());
+        if (GameState == 0) {
+            MenuScreen(g);
+        } else if (GameState == 1) {
+            /// background
+            g.setColor(Color.WHITE);
+            g.fillRect(0, 0, getWidth(), getHeight());
 
-        // player
-        g.setColor(Color.BLUE);
-        g.fillRect(playerX, playerY, 32, 32);
+            // player
+            g.setColor(Color.BLUE);
+            g.fillRect(playerX, playerY, 32, 32);
+        } else if (GameState == 2) {
+            // Level 2 drawing
+        } else if (GameState == 3) {
+            // Level 3 drawing
+        } else if (GameState == 4) {
+            // Level Picker drawing
+        }
+
     }
 
     // Game Screens Designs
     public void MenuScreen(Graphics g) {
-        
+        ImageIcon mainMenuBG = new ImageIcon("C:\\Users\\Darren Wibisono\\Documents\\AlPro Coding\\ALP\\RescueRushALP\\assets\\omusi54tuse91.gif");
+        g.drawImage(mainMenuBG.getImage(), 0, 0, getWidth(), getHeight(), this);
     }
 
     // INPUT KEYBOARD
