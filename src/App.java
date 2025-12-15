@@ -3,128 +3,93 @@ import java.awt.event.*;
 import javax.swing.*;
 
 public class App {
+
+    // simple, procedural-style game state (no custom classes)
+    static int playerX = 100;
+    static int playerY = 100;
+    static int speed   = 10;
+    static int GameState = 0; // 0 = menu, 1 = level1
+    static Timer timer;
+
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new GameWindow());
-    }
-}
+        SwingUtilities.invokeLater(() -> {
+            JFrame frame = new JFrame("Rescue Rush");
+            frame.setSize(1280, 720);
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setResizable(false);
 
-class GameWindow extends JFrame {
-    public GameWindow() {
-        setTitle("Rescue Rush");
-        setSize(1280, 720);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setResizable(false);
+            // create an instance so we can use non-static (public void) methods
+            final App app = new App();
 
-        add(new GamePanel());
+            JPanel panel = new JPanel() {
+                public void paintComponent(Graphics g) {
+                    //Base game Logic (mskin game state sini)
+                    super.paintComponent(g);
+                    if (GameState == 0) {
+                        app.MenuScreen(g, this);
+                    } else if (GameState == 1) {
+                        g.setColor(Color.WHITE);
+                        g.fillRect(0, 0, getWidth(), getHeight());
+                        g.setColor(Color.BLUE);
+                        g.fillRect(playerX, playerY, 32, 32);
+                    }
+                }
+            };
 
-        setVisible(true);
-    }
-}
+            panel.setFocusable(true);
 
-class GamePanel extends JPanel implements KeyListener, MouseListener {
+            // keyboard: directly modify static state for smooth movement
+            panel.addKeyListener(new KeyAdapter() {
+                public void keyPressed(KeyEvent e) {
+                    int k = e.getKeyCode();
+                    if (k == KeyEvent.VK_W || k == KeyEvent.VK_UP) playerY -= speed;
+                    if (k == KeyEvent.VK_S || k == KeyEvent.VK_DOWN) playerY += speed;
+                    if (k == KeyEvent.VK_A || k == KeyEvent.VK_LEFT) playerX -= speed;
+                    if (k == KeyEvent.VK_D || k == KeyEvent.VK_RIGHT) playerX += speed;
+                }
+            });
 
-    // ===== GAME VARIABLES: put ALL your game data here =====
-    public int playerX = 100;
-    public int playerY = 100;
-    public int speed = 10;
-    public int GameState = 0;
-    /* 
-        Game State List:
-        0 = Main Menu
-        4 = Level Picker Screen
-        1 = Level 1
-        2 = Level 2
-        3 = Level 3 
-    */
+            // mouse: check button coordinates on click
+            panel.addMouseListener(new MouseAdapter() {
+                public void mousePressed(MouseEvent e) {
+                    int x = e.getX();
+                    int y = e.getY();
+                    if (x >= 540 && x <= 740 && y >= 600 && y <= 650) {
+                        GameState = 1;
+                    }
+                }
+            });
 
-    // Timer for game loop (public only)
-    public Timer timer;
+            frame.add(panel);
+            frame.setVisible(true);
 
-    public GamePanel() {
-        setFocusable(true);
-        addKeyListener(this);
-        addMouseListener(this);
+            // ensure panel has focus so key events are delivered
+            panel.requestFocusInWindow();
 
-        timer = new Timer(16, e -> {
-            update();
-            repaint();
+            // simple game loop timer (~60 FPS)
+            timer = new Timer(16, ev -> {
+                // could update game logic here
+                panel.repaint();
+            });
+            timer.start();
         });
-        timer.start();
     }
 
-    public void mousePressed(MouseEvent e) {
-        int x = e.getX();
-        int y = e.getY();
-        
-        // Check if button clicked (Start Game button at 540, 600)
-        if (x >= 540 && x <= 740 && y >= 600 && y <= 650) {
-            GameState = 1;  // Switch to Level 1
-        }
-    }
-
-    public void mouseClicked(MouseEvent e) {}
-    public void mouseReleased(MouseEvent e) {}
-    public void mouseEntered(MouseEvent e) {}
-    public void mouseExited(MouseEvent e) {}
-
-    // ===== UPDATE GAME LOGIC =====
-    public void update() {
-        
-    }
-
-    // ===== DRAW EVERYTHING HERE =====
-    @Override
-    public void paintComponent(Graphics g) {
-        super.paintComponent(g);
-
-        if (GameState == 0) {
-            MenuScreen(g);
-        } else if (GameState == 1) {
-            /// background
-            g.setColor(Color.WHITE);
-            g.fillRect(0, 0, getWidth(), getHeight());
-
-            // player
-            g.setColor(Color.BLUE);
-            g.fillRect(playerX, playerY, 32, 32);
-        } else if (GameState == 2) {
-            // Level 2 drawing
-        } else if (GameState == 3) {
-            // Level 3 drawing
-        } else if (GameState == 4) {
-            // Level Picker drawing
-        }
-
-    }
-
-    // Game Screens Designs
-    public void MenuScreen(Graphics g) {
+    // procedural menu renderer
+    public void MenuScreen(Graphics g, Component c) {
         ImageIcon mainMenuBG = new ImageIcon("C:\\Users\\Darren Wibisono\\Documents\\AlPro Coding\\ALP\\RescueRushALP\\assets\\omusi54tuse91.gif");
-        g.drawImage(mainMenuBG.getImage(), 0, 0, getWidth(), getHeight(), this);
+        g.drawImage(mainMenuBG.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
 
-        // Draw button
         int buttonX = 540;
         int buttonY = 600;
         int buttonWidth = 200;
         int buttonHeight = 50;
-        
+
         g.setColor(new Color(100, 150, 255));
         g.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
-        
+
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, 20));
         g.drawString("Start Game", buttonX + 50, buttonY + 35);
     }
-
-    // INPUT KEYBOARD
-    public void keyPressed(KeyEvent e) {
-        int k = e.getKeyCode();
-        if (k == KeyEvent.VK_W || k == KeyEvent.VK_UP) playerY -= speed;
-        if (k == KeyEvent.VK_S || k == KeyEvent.VK_DOWN) playerY += speed;
-        if (k == KeyEvent.VK_A || k == KeyEvent.VK_LEFT) playerX -= speed;
-        if (k == KeyEvent.VK_D || k == KeyEvent.VK_RIGHT) playerX += speed;
-    }
-
-    public void keyReleased(KeyEvent e) {}
-    public void keyTyped(KeyEvent e) {}
 }
