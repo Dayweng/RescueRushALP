@@ -9,14 +9,18 @@ public class App {
     static int playerY = 100;
     static int speed   = 10;
     static int GameState = 0; // 0 = menu, 1 = level1
+    static int nextScreen = 0;
     static Timer timer;
+    static Timer timerInternal;
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame("Rescue Rush");
-            frame.setSize(1280, 720);
+            frame.setSize(1920, 1080);
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setResizable(false);
+            frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+            frame.setUndecorated(true);
 
             // create an instance so we can use non-static (public void) methods
             final App app = new App();
@@ -26,13 +30,15 @@ public class App {
                     //Base game Logic (mskin game state sini)
                     super.paintComponent(g);
                     if (GameState == 0) {
+                        app.OnBoarding(g, this);
+                    } else if (GameState == 5) {
                         app.MenuScreen(g, this);
                     } else if (GameState == 1) {
                         g.setColor(Color.WHITE);
                         g.fillRect(0, 0, getWidth(), getHeight());
                         g.setColor(Color.BLUE);
                         g.fillRect(playerX, playerY, 32, 32);
-                    }else if (GameState == 100) {
+                    } else if (GameState == 100) {
                         app.selectLevelSScreen(g, this);
                     }
                 }
@@ -48,6 +54,7 @@ public class App {
                     if (k == KeyEvent.VK_S || k == KeyEvent.VK_DOWN) playerY += speed;
                     if (k == KeyEvent.VK_A || k == KeyEvent.VK_LEFT) playerX -= speed;
                     if (k == KeyEvent.VK_D || k == KeyEvent.VK_RIGHT) playerX += speed;
+                    if (k == KeyEvent.VK_ESCAPE) frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
                 }
             });
 
@@ -101,7 +108,23 @@ public class App {
         g.drawString("Start Game", buttonX + 50, buttonY + 35);
     }
 
-     public void selectLevelSScreen(Graphics g, Component c) {
+    public void OnBoarding(Graphics g, Component c) {
+        ImageIcon logo = new ImageIcon("assets/Logo/Rescue Rush Wide Logo.png");
+        g.drawImage(logo.getImage(), 300, 450, 1250, 500, c);
+        
+        timerInternal = new Timer(2000, ev -> {
+                nextScreen = 1;
+            });
+        
+        timerInternal.start();
+        if (nextScreen == 1){
+            timerInternal.stop();
+            GameState = 5;
+        }
+
+    }
+
+    public void selectLevelSScreen(Graphics g, Component c) {
         ImageIcon mainMenuBG = new ImageIcon("assets/menu-background.gif");
         g.drawImage(mainMenuBG.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
 
