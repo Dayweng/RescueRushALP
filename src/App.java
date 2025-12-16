@@ -19,7 +19,7 @@ public class App {
             frame.setSize(1920, 1080);
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setResizable(false);
-            frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+            
             frame.setUndecorated(true);
 
             // create an instance so we can use non-static (public void) methods
