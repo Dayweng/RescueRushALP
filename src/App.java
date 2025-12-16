@@ -16,10 +16,10 @@ public class App {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame("Rescue Rush");
-            frame.setSize(1920, 1080);
+            frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+            //frame.setSize(1920, 1080);
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setResizable(false);
-            
             frame.setUndecorated(true);
 
             // create an instance so we can use non-static (public void) methods
