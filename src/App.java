@@ -19,15 +19,15 @@ public class App {
         SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame("Rescue Rush");
             frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-            frame.setSize(1920, 1080);
+            frame.setSize(Screenwidth, Screenheight);
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setResizable(false);
             //frame.setUndecorated(true);
             
             //User ScreenSize
             Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-            Screenwidth = 1920; //(int) screenSize.getWidth();
-            Screenheight = 1080; //(int) screenSize.getHeight();
+            Screenwidth = 1366; //(int) screenSize.getWidth();
+            Screenheight = 768; //(int) screenSize.getHeight();
 
             // create an instance so we can use non-static (public void) methods
             final App app = new App();
