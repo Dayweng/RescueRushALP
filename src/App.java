@@ -12,22 +12,23 @@ public class App {
     static int nextScreen = 0;
     static Timer timer;
     static Timer timerInternal;
-    static int Screenwidth;
-    static int Screenheight;
+
+    //User ScreenSize
+    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+    static int Screenwidth = 1366; //(int) screenSize.getWidth();
+    static int Screenheight = 768; //(int) screenSize.getHeight();
 
     public static void main(String[] args) {
+        System.out.println("Rescue Rush Game Starting...");
+        System.out.println("Screen Width: " + Screenwidth + ", Screen Height: " + Screenheight);
+        
         SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame("Rescue Rush");
-            frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-            frame.setSize(Screenwidth, Screenheight);
+            //frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+            frame.setSize(1366, 768);
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setResizable(false);
             //frame.setUndecorated(true);
-            
-            //User ScreenSize
-            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-            Screenwidth = 1366; //(int) screenSize.getWidth();
-            Screenheight = 768; //(int) screenSize.getHeight();
 
             // create an instance so we can use non-static (public void) methods
             final App app = new App();
@@ -117,7 +118,7 @@ public class App {
 
     public void OnBoarding(Graphics g, Component c) {
         ImageIcon logo = new ImageIcon("assets/Logo/Rescue Rush Wide Logo.png");
-        g.drawImage(logo.getImage(), (Screenwidth/3) - 625, Screenheight/3, 1250, 500, c);
+        g.drawImage(logo.getImage(), Screenwidth/4, Screenheight/4, Screenwidth/2, Screenheight/3, c);
         
         timerInternal = new Timer(2000, ev -> {
                 nextScreen = 1;
