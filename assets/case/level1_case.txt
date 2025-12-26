@@ -1,0 +1,108 @@
+LEVEL=1
+TIME_LIMIT_SECONDS=300
+BACKPACK_CAPACITY=2
+EVACUATION_CAPACITY=1
+
+---
+
+ID=L1_G_01
+TYPE=GREEN
+TITLE=Flashlight
+DESCRIPTION=A flashlight is found inside an abandoned house.
+ITEM_REWARD=flashlight
+REQUIRED_ITEM=none
+RESOLVE_TIME_SEC=5
+
+---
+
+ID=L1_R_01
+TYPE=RED
+TITLE=Trapped Elderly
+DESCRIPTION=An elderly person is trapped inside a dark flooded house and cannot find the exit.
+ITEM_REWARD=none
+REQUIRED_ITEM=flashlight
+EVAC_TYPE=person
+RESOLVE_TIME_SEC=20
+
+---
+
+ID=L1_G_02
+TYPE=GREEN
+TITLE=Life Jacket
+DESCRIPTION=A life jacket is floating near a flooded street.
+ITEM_REWARD=life_jacket
+REQUIRED_ITEM=none
+RESOLVE_TIME_SEC=5
+
+---
+
+ID=L1_R_02
+TYPE=RED
+TITLE=Child in Flood
+DESCRIPTION=A child is stranded and cannot swim in deep flood water.
+ITEM_REWARD=none
+REQUIRED_ITEM=life_jacket
+EVAC_TYPE=person
+RESOLVE_TIME_SEC=20
+
+---
+
+ID=L1_G_03
+TYPE=GREEN
+TITLE=Emergency Food
+DESCRIPTION=Canned food supplies are found in a small shop.
+ITEM_REWARD=food
+REQUIRED_ITEM=none
+RESOLVE_TIME_SEC=5
+
+---
+
+ID=L1_G_04
+TYPE=GREEN
+TITLE=Pet Food
+DESCRIPTION=Animal food is found near a flooded pet store.
+ITEM_REWARD=pet_food
+REQUIRED_ITEM=none
+RESOLVE_TIME_SEC=5
+
+---
+
+ID=L1_R_03
+TYPE=RED
+TITLE=Isolated Baby
+DESCRIPTION=A baby is isolated inside a partially flooded house and needs immediate evacuation.
+ITEM_REWARD=none
+REQUIRED_ITEM=none
+EVAC_TYPE=person
+RESOLVE_TIME_SEC=20
+
+---
+
+ID=L1_R_04
+TYPE=RED
+TITLE=Trapped Animal
+DESCRIPTION=A frightened animal refuses to move and must be lured with food.
+ITEM_REWARD=none
+REQUIRED_ITEM=pet_food
+EVAC_TYPE=animal
+RESOLVE_TIME_SEC=15
+
+---
+
+ID=L1_Y_01
+TYPE=YELLOW
+TITLE=Electricity Hazard
+DESCRIPTION=Electricity is still active in a flooded house.
+QUESTION=Turn off the electricity?
+CHOICES=YES,IGNORE
+RESOLVE_TIME_SEC=10
+
+---
+
+ID=L1_Y_02
+TYPE=YELLOW
+TITLE=Locked Door
+DESCRIPTION=A locked door blocks access to a house affected by flooding.
+QUESTION=Force the door open?
+CHOICES=YES,IGNORE
+RESOLVE_TIME_SEC=10
