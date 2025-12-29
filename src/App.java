@@ -51,7 +51,7 @@ public class App {
     static int[] safeZone = new int[2];
     static int backpackCapacity = 5;
     static int evacCapacity;
-    static int timeLeft = 5; // 5 minutes
+    static int timeLeft = 180; // 5 minutes
     static Timer gameTimer;
     static int currentLevel = 1; // 1,2,3
 
@@ -63,7 +63,7 @@ public class App {
 
     // Case data
     static List<Map<String, String>> cases = new ArrayList<>();
-    static int timeLimitSeconds = 5;
+    static int timeLimitSeconds = 180;
     static int evacuationCapacity = 1;
 
     // In-game dialog
