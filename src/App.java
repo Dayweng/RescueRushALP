@@ -20,10 +20,13 @@ public class App {
     static int playerX;
     static int playerY;
     static int speed = 4;
-    static int GameState = 0; // 0 = menu, 1 = level1, 2 = win, 3 = fail
-    static int nextScreen = 0;
+    static int GameState = 0; //States of the game screen
+    
+    //Loading Variables
     static Timer timer;
     static Timer timerInternal;
+    static int nextScreen = 0;
+    static boolean timerRunning = false;
 
     public BufferedImage up1, up2, down1, down2, left1, left2, right1, right2;
     public BufferedImage grass, water0, waterup, waterdown, waterleft, waterright, waterupright, waterupleft, waterdownright, waterdownleft, road;
@@ -56,7 +59,7 @@ public class App {
     static int evacCapacity;
     static int timeLeft = 180; // 5 minutes
     static Timer gameTimer;
-    static int currentLevel = 1; // 1,2,3
+    static int currentLevel = 0; // 1,2,3 /0 = not started /5 = menu
 
     // Flooding variables
     static Timer floodTimer;
@@ -233,6 +236,7 @@ public class App {
             GAME STATE 0 = ONBOARDING
             GAME STATE 5 = MAIN MENU
             GAME STATE 100 = LEVEL SELECTION
+            GAME STATE 101 = LOADING LEVEL 1
             GAME STATE 1 = IN GAME (LEVEL 1,2,3)
             GAME STATE 2 = WIN SCREEN
             GAME STATE 3 = FAIL SCREEN
@@ -240,6 +244,15 @@ public class App {
 
             */
 
+            //#region internal timer str
+            timerInternal = new Timer(2000, ev -> {
+                nextScreen = 1;
+                timerInternal.stop();
+                timerRunning = false;
+                System.out.println("timer stopped");
+            });
+            timerInternal.setRepeats(false);
+            //#endregion
 
             JPanel panel = new JPanel() {
                 public void paintComponent(Graphics g) {
@@ -249,8 +262,9 @@ public class App {
                         app.OnBoarding(g, this);
                     } else if (GameState == 5) {
                         app.MenuScreen(g, this);
-                    }
-                    if (GameState == STATE_COUNTDOWN) {
+                    } else if (GameState == 101) {
+                        app.loadingScreenLevel1(g, this);
+                    } else if (GameState == STATE_COUNTDOWN) {
                         app.drawTileMap(g, this);
                         Graphics2D g2 = (Graphics2D) g;
                         g2.setColor(new Color(0, 0, 0, 180));
@@ -272,7 +286,7 @@ public class App {
                         backToMenuButton.setVisible(false);
                         return;
                     }
-                    if (GameState == 1) {
+                    else if (GameState == 1) {
                         app.drawTileMap(g, this);
                         app.drawCharacter(g, playerX, playerY, direction, spriteNum);
                         app.drawEmergencies(g, this);
@@ -347,6 +361,7 @@ public class App {
                     }
                 }
             };
+            panel.setLayout(null); //Biar button XY nya bisa diatur manual
 
             //#endregion
 
@@ -382,11 +397,8 @@ public class App {
             level1Button.setFont(new Font("Arial", Font.BOLD, 20));
             level1Button.setFocusPainted(false);
             level1Button.addActionListener(e -> {
-                new App().loadMap();
-                spawnPlayerOnRoad(); // Reset posisi player ke awal
-                currentLevel = 1;
-                GameState = STATE_COUNTDOWN;
-                startCountdown();
+                currentLevel = 5;
+                GameState = 101;
             });
             panel.add(level1Button);
 
@@ -637,14 +649,17 @@ public class App {
         tryAgainButton.setVisible(false);
         backToMenuButton.setVisible(false);
         
-        timerInternal = new Timer(2000, ev -> {
-                nextScreen = 1;
-            });
-        
-        timerInternal.start();
+        if (!timerRunning && currentLevel == 0) {
+            currentLevel = 5;
+            nextScreen = 0;          // reset status
+            timerInternal.start();   // Start Timer
+            timerRunning = true;
+            System.out.println("timer started");
+        }
+
         if (nextScreen == 1){
-            timerInternal.stop();
             GameState = 5;
+            System.out.println("Switch to Menu Screen");
         }
     }
     
@@ -665,6 +680,33 @@ public class App {
     public void selectLevelSScreen(Graphics g, Component c) {
         ImageIcon mainMenuBG = new ImageIcon("assets/images/background/menu-background.gif");
         g.drawImage(mainMenuBG.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
+    }
+
+    public void loadingScreenLevel1(Graphics g, Component c) {
+        ImageIcon loadingBG = new ImageIcon("assets/images/background/Loading L1.gif");
+        g.drawImage(loadingBG.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
+
+        level1Button.setVisible(false);
+        level2Button.setVisible(false);
+        level3Button.setVisible(false);
+        backButton.setVisible(false);
+        
+        if (!timerRunning && currentLevel == 5) {
+            timerInternal.setDelay(5000);
+            timerInternal.setInitialDelay(5000);
+            currentLevel = 1;
+            nextScreen = 0;          // reset status
+            timerInternal.start();   // Start Timer
+            timerRunning = true;
+            System.out.println("timer started");
+        }
+        
+        if (nextScreen == 1){
+            new App().loadMap();
+            spawnPlayerOnRoad(); // Reset posisi player ke awal
+            GameState = STATE_COUNTDOWN;
+            startCountdown();
+        }
     }
 
     //#endregion
