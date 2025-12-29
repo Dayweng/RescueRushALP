@@ -1,3 +1,4 @@
+//#region IMPORTS
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
@@ -9,8 +10,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import javax.swing.*;
+//#endregion
 
 public class App {
+    //#region GLOBAL STATIC VAR
     // Track fail reason: 0 = none, 1 = times up, 2 = flood
     static int failReason = 0;
 
@@ -84,6 +87,18 @@ public class App {
 
     // User progress
     static int unlockedLevels = 1;
+
+    // map games
+    public BufferedImage imagemap1;
+
+    //User ScreenSize
+    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+    static int Screenwidth = 1366; //(int) screenSize.getWidth();
+    static int Screenheight = 768; //(int) screenSize.getHeight();
+
+    //#endregion
+
+    //#region what dis??
 
     public static void drawSubWindow(Graphics2D graphics2D, int x, int y, int width, int height) {
         // Background hitam transparan
@@ -188,15 +203,7 @@ public class App {
         }
     }
 
-
-    // map games
-    public BufferedImage imagemap1;
-
-
-    //User ScreenSize
-    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-    static int Screenwidth = 1366; //(int) screenSize.getWidth();
-    static int Screenheight = 768; //(int) screenSize.getHeight();
+    //#region WINDOW CONFIG
 
     public static void main(String[] args) {
         System.out.println("Rescue Rush Game Starting...");
@@ -485,6 +492,7 @@ public class App {
 
             //#endregion
 
+            //#region INPUT HANDLING
             panel.setFocusable(true);
 
             // keyboard: directly modify static state for smooth movement
@@ -618,6 +626,7 @@ public class App {
             timer.start();
         });
     }
+    //#endregion
 
     //#region GAME SCREENS LOGIC
     public void OnBoarding(Graphics g, Component c) {
@@ -705,7 +714,7 @@ public class App {
         }
     }
 
-    // MAP FUNCTIONS
+    //#region TILEMAP GEN
 
     public void loadTileImages() {
         try {
@@ -771,11 +780,17 @@ public class App {
         }
     }
 
+    //#endregion
+
+    //#region WARNING RENDER
+
     public void drawWarnings(Graphics g, Component c) {
         for (int i = 0; i < 3; i++) {
             g.drawImage(warningGreen, warningPoints[i][0], warningPoints[i][1], tileSize, tileSize, c);
         }
     }
+
+    //#endregion
 
     public void loadMap() {
         try {
@@ -842,6 +857,7 @@ public class App {
         }
     }
 
+    //#region USER DATA HANDLING
     static void loadUserData() {
         try {
             java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.FileReader("assets/data/user/user-data.txt"));
@@ -877,6 +893,8 @@ public class App {
         isDialogShowing = false;
         dialogText = "";
     }
+
+    //#endregion
 
     static void startLevel() {
     loadCasesFromTXT();
@@ -1031,7 +1049,7 @@ public class App {
         return true;
     }
 
-    void interactWithEmergency() {
+    static void interactWithEmergency() {
         int playerCol = playerX / tileSize;
         int playerRow = playerY / tileSize;
         int safeCol = safeZone[0] / tileSize;
@@ -1246,4 +1264,3 @@ void drawBlurredMap(Graphics2D g2, Component c) {
     }
 
 }
-
