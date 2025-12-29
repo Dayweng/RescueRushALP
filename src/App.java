@@ -37,7 +37,7 @@ public class App {
     static int[][] warningPoints = new int[3][2];
     static Random random = new Random();
     
-    static final int STATE_COUNTDOWN = 10;
+    static int STATE_COUNTDOWN = 10;
     static int countdownValue = 3;
     static Timer countdownTimer;
     static boolean isGameActive = false;
@@ -218,25 +218,30 @@ public class App {
             loadUserData();
             spawnPlayerOnRoad();
 
+
+            //#region GAME STATE LOGIC
+            
+            /* TULIS SMW GAME STATE DISINI DAN ARTINYA!
+
+            GAME STATE 0 = ONBOARDING
+            GAME STATE 5 = MAIN MENU
+            GAME STATE 100 = LEVEL SELECTION
+            GAME STATE 1 = IN GAME (LEVEL 1,2,3)
+            GAME STATE 2 = WIN SCREEN
+            GAME STATE 3 = FAIL SCREEN
+            GAME STATE STATE_COUNTDOWN = COUNTDOWN BEFORE STARTING LEVEL
+
+            */
+
+
             JPanel panel = new JPanel() {
                 public void paintComponent(Graphics g) {
                     //Base game Logic (mskin game state sini)
                     super.paintComponent(g);
                     if (GameState == 0) {
                         app.OnBoarding(g, this);
-                        restartButton.setVisible(false);
-                        tryAgainButton.setVisible(false);
-                        backToMenuButton.setVisible(false);
                     } else if (GameState == 5) {
                         app.MenuScreen(g, this);
-                        startButton.setVisible(true);
-                        restartButton.setVisible(true);
-                        level1Button.setVisible(false);
-                        level2Button.setVisible(false);
-                        level3Button.setVisible(false);
-                        backButton.setVisible(false);
-                        tryAgainButton.setVisible(false);
-                        backToMenuButton.setVisible(false);
                     }
                     if (GameState == STATE_COUNTDOWN) {
                         app.drawTileMap(g, this);
@@ -336,6 +341,9 @@ public class App {
                 }
             };
 
+            //#endregion
+
+            //#region UI BUTTONS
             // Create buttons
             startButton = new JButton("START GAME");
             startButton.setBounds(540, 600, 200, 50);
@@ -475,6 +483,8 @@ public class App {
             tryAgainButton.setVisible(false);
             backToMenuButton.setVisible(false);
 
+            //#endregion
+
             panel.setFocusable(true);
 
             // keyboard: directly modify static state for smooth movement
@@ -609,9 +619,14 @@ public class App {
         });
     }
 
+    //#region GAME SCREENS LOGIC
     public void OnBoarding(Graphics g, Component c) {
         ImageIcon logo = new ImageIcon("assets/images/logo/rescue-rush-logo.png");
         g.drawImage(logo.getImage(), Screenwidth/4, Screenheight/4, Screenwidth/2, Screenheight/3, c);
+
+        restartButton.setVisible(false);
+        tryAgainButton.setVisible(false);
+        backToMenuButton.setVisible(false);
         
         timerInternal = new Timer(2000, ev -> {
                 nextScreen = 1;
@@ -627,6 +642,15 @@ public class App {
     public void MenuScreen(Graphics g, Component c) {
         ImageIcon mainMenuBG = new ImageIcon("assets/images/background/menu-background.gif");
         g.drawImage(mainMenuBG.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
+
+        startButton.setVisible(true);
+        restartButton.setVisible(true);
+        level1Button.setVisible(false);
+        level2Button.setVisible(false);
+        level3Button.setVisible(false);
+        backButton.setVisible(false);
+        tryAgainButton.setVisible(false);
+        backToMenuButton.setVisible(false);
     }
 
     public void selectLevelSScreen(Graphics g, Component c) {
@@ -634,6 +658,7 @@ public class App {
         g.drawImage(mainMenuBG.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
     }
 
+    //#endregion
     
     // CHARACTER FUNCTION
 
