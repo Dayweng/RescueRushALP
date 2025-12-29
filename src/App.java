@@ -1,6 +1,3 @@
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Graphics2D;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -14,12 +11,13 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 
 public class App {
+    // Track fail reason: 0 = none, 1 = times up, 2 = flood
+    static int failReason = 0;
 
-    // simple, procedural-style game state (no custom classes)
     static int playerX;
     static int playerY;
     static int speed = 4;
-    static int GameState = 0; // 0 = menu, 1 = level1
+    static int GameState = 0; // 0 = menu, 1 = level1, 2 = win, 3 = fail
     static int nextScreen = 0;
     static Timer timer;
     static Timer timerInternal;
@@ -38,6 +36,13 @@ public class App {
 
     static int[][] warningPoints = new int[3][2];
     static Random random = new Random();
+    
+    static final int STATE_COUNTDOWN = 10;
+    static int countdownValue = 3;
+    static Timer countdownTimer;
+    static boolean isGameActive = false;
+    static boolean isMapFrozen = false;
+
 
     // Emergency points: List of [x, y, type, resolved, subtype]
     static List<int[]> emergencies = new ArrayList<>();
@@ -46,13 +51,19 @@ public class App {
     static int[] safeZone = new int[2];
     static int backpackCapacity = 5;
     static int evacCapacity;
-    static int timeLeft = 300; // 5 minutes
+    static int timeLeft = 5; // 5 minutes
     static Timer gameTimer;
     static int currentLevel = 1; // 1,2,3
 
+    // Flooding variables
+    static Timer floodTimer;
+    static int floodStep = 0;
+    static int maxFloodSteps = 20; // adjust for duration
+    static boolean isFlooding = false;
+
     // Case data
     static List<Map<String, String>> cases = new ArrayList<>();
-    static int timeLimitSeconds = 300;
+    static int timeLimitSeconds = 5;
     static int evacuationCapacity = 1;
 
     // In-game dialog
@@ -60,6 +71,19 @@ public class App {
     static String dialogText = "";
     static int dialogType = 0; // 0 = emergency, 1 = backpack
     static int selectedToolIndex = -1;
+
+    // UI Buttons
+    static JButton startButton;
+    static JButton level1Button;
+    static JButton level2Button;
+    static JButton level3Button;
+    static JButton backButton;
+    static JButton restartButton;
+    static JButton tryAgainButton;
+    static JButton backToMenuButton;
+
+    // User progress
+    static int unlockedLevels = 1;
 
     public static void drawSubWindow(Graphics2D graphics2D, int x, int y, int width, int height) {
         // Background hitam transparan
@@ -102,10 +126,26 @@ public class App {
         return lines;
     }
 
+    static void startCountdown() {
+        countdownValue = 3;
+        isGameActive = false;
+        if (countdownTimer != null) countdownTimer.stop();
+        countdownTimer = new Timer(1000, e -> {
+            countdownValue--;
+            if (countdownValue <= 0) {
+                countdownTimer.stop();
+                isGameActive = true;
+                GameState = 1; // Masuk ke gameplay
+                startLevel();  // Mulai game logic
+            }
+        });
+        countdownTimer.start();
+    }
+
     static void loadCasesFromTXT() {
         cases.clear();
         try {
-            BufferedReader reader = new BufferedReader(new FileReader("assets/case/level1_case.txt"));
+            BufferedReader reader = new BufferedReader(new FileReader("assets/data/case/level1-case.txt"));
             String line;
             boolean inCase = false;
             Map<String, String> currentCase = null;
@@ -176,6 +216,7 @@ public class App {
             app.loadCharacterImages();
             app.loadTileImages();
             app.loadMap();
+            loadUserData();
             spawnPlayerOnRoad();
 
             JPanel panel = new JPanel() {
@@ -184,14 +225,56 @@ public class App {
                     super.paintComponent(g);
                     if (GameState == 0) {
                         app.OnBoarding(g, this);
+                        restartButton.setVisible(false);
+                        tryAgainButton.setVisible(false);
+                        backToMenuButton.setVisible(false);
                     } else if (GameState == 5) {
                         app.MenuScreen(g, this);
-                    } else if (GameState == 1) {
+                        startButton.setVisible(true);
+                        restartButton.setVisible(true);
+                        level1Button.setVisible(false);
+                        level2Button.setVisible(false);
+                        level3Button.setVisible(false);
+                        backButton.setVisible(false);
+                        tryAgainButton.setVisible(false);
+                        backToMenuButton.setVisible(false);
+                    }
+                    if (GameState == STATE_COUNTDOWN) {
+                        app.drawTileMap(g, this);
+                        Graphics2D g2 = (Graphics2D) g;
+                        g2.setColor(new Color(0, 0, 0, 180));
+                        g2.fillRect(0, 0, getWidth(), getHeight());
+                        g2.setColor(Color.WHITE);
+                        g2.setFont(new Font("Arial", Font.BOLD, 120));
+                        String text = String.valueOf(countdownValue);
+                        FontMetrics fm = g2.getFontMetrics();
+                        int x = (getWidth() - fm.stringWidth(text)) / 2;
+                        int y = (getHeight() + fm.getAscent()) / 2;
+                        g2.drawString(text, x, y);
+                        startButton.setVisible(false);
+                        restartButton.setVisible(false);
+                        level1Button.setVisible(false);
+                        level2Button.setVisible(false);
+                        level3Button.setVisible(false);
+                        backButton.setVisible(true);
+                        tryAgainButton.setVisible(false);
+                        backToMenuButton.setVisible(false);
+                        return;
+                    }
+                    if (GameState == 1) {
                         app.drawTileMap(g, this);
                         app.drawCharacter(g, playerX, playerY, direction, spriteNum);
                         app.drawEmergencies(g, this);
                         app.drawSafeZone(g, this);
                         app.drawTimer(g, this);
+                        startButton.setVisible(false);
+                        restartButton.setVisible(false);
+                        level1Button.setVisible(false);
+                        level2Button.setVisible(false);
+                        level3Button.setVisible(false);
+                        backButton.setVisible(true);
+                        tryAgainButton.setVisible(false);
+                        backToMenuButton.setVisible(false);
                         if (isDialogShowing) {
                             Graphics2D g2 = (Graphics2D) g;
                             drawSubWindow(g2, 200, 200, 400, 150);
@@ -202,15 +285,196 @@ public class App {
                                 g.drawString(wrappedLines.get(i), 220, 240 + i * 20);
                             }
                         }
+                        if (isFlooding) {
+                            g.setColor(Color.RED);
+                            g.setFont(new Font("Arial", Font.BOLD, 24));
+                            g.drawString("WARNING: FLOODING INCOMING!", 10, 120);
+                        }
+                        // Always show warnings for backpack/evacuation full if the condition is met
+                        if ("Backpack is full!".equals(dialogText)) {
+                            g.setColor(Color.RED);
+                            g.setFont(new Font("Arial", Font.BOLD, 24));
+                            g.drawString("WARNING: BACKPACK IS FULL!", 10, 160);
+                        } else if ("Evacuation capacity full!".equals(dialogText)) {
+                            g.setColor(Color.RED);
+                            g.setFont(new Font("Arial", Font.BOLD, 24));
+                            g.drawString("WARNING: EVACUATION IS FULL!", 10, 160);
+                        }
                     } else if (GameState == 2) {
                         app.drawWinScreen(g, this);
+                        startButton.setVisible(false);
+                        restartButton.setVisible(false);
+                        level1Button.setVisible(false);
+                        level2Button.setVisible(false);
+                        level3Button.setVisible(false);
+                        backButton.setVisible(false);
+                        tryAgainButton.setVisible(true);
+                        backToMenuButton.setVisible(true);
                     } else if (GameState == 3) {
                         app.drawFailScreen(g, this);
+                        startButton.setVisible(false);
+                        restartButton.setVisible(false);
+                        level1Button.setVisible(false);
+                        level2Button.setVisible(false);
+                        level3Button.setVisible(false);
+                        backButton.setVisible(false);
+                        tryAgainButton.setVisible(true);
+                        backToMenuButton.setVisible(true);
                     } else if (GameState == 100) {
+                        // Reload user data and update level button states
+                        loadUserData();
+                        level1Button.setEnabled(true);
+                        level2Button.setEnabled(unlockedLevels >= 2);
+                        level3Button.setEnabled(unlockedLevels >= 3);
                         app.selectLevelSScreen(g, this);
+                        startButton.setVisible(false);
+                        restartButton.setVisible(false);
+                        level1Button.setVisible(true);
+                        level2Button.setVisible(true);
+                        level3Button.setVisible(true);
+                        backButton.setVisible(true);
                     }
                 }
             };
+
+            // Create buttons
+            startButton = new JButton("START GAME");
+            startButton.setBounds(540, 600, 200, 50);
+            startButton.setBackground(new Color(100, 150, 255));
+            startButton.setForeground(Color.WHITE);
+            startButton.setFont(new Font("Arial", Font.BOLD, 20));
+            startButton.setFocusPainted(false);
+            startButton.addActionListener(e -> GameState = 100);
+            panel.add(startButton);
+
+            restartButton = new JButton("RESTART");
+            restartButton.setBounds(540, 660, 200, 50);
+            restartButton.setBackground(new Color(255, 100, 100));
+            restartButton.setForeground(Color.WHITE);
+            restartButton.setFont(new Font("Arial", Font.BOLD, 20));
+            restartButton.setFocusPainted(false);
+            restartButton.addActionListener(e -> {
+                unlockedLevels = 1;
+                saveUserData();
+                level2Button.setEnabled(false);
+                level3Button.setEnabled(false);
+            });
+            panel.add(restartButton);
+
+            level1Button = new JButton("LEVEL 1");
+            level1Button.setBounds(540, 250, 170, 50);
+            level1Button.setBackground(new Color(100, 150, 255));
+            level1Button.setForeground(Color.WHITE);
+            level1Button.setFont(new Font("Arial", Font.BOLD, 20));
+            level1Button.setFocusPainted(false);
+            level1Button.addActionListener(e -> {
+                new App().loadMap();
+                spawnPlayerOnRoad(); // Reset posisi player ke awal
+                currentLevel = 1;
+                GameState = STATE_COUNTDOWN;
+                startCountdown();
+            });
+            panel.add(level1Button);
+
+            level2Button = new JButton("LEVEL 2");
+            level2Button.setBounds(540, 320, 170, 50);
+            level2Button.setBackground(new Color(100, 150, 255));
+            level2Button.setForeground(Color.WHITE);
+            level2Button.setFont(new Font("Arial", Font.BOLD, 20));
+            level2Button.setFocusPainted(false);
+            level2Button.addActionListener(e -> {
+                new App().loadMap();
+                spawnPlayerOnRoad(); // Reset posisi player ke awal
+                currentLevel = 2;
+                GameState = STATE_COUNTDOWN;
+                startCountdown();
+            });
+            panel.add(level2Button);
+
+            level3Button = new JButton("LEVEL 3");
+            level3Button.setBounds(540, 390, 170, 50);
+            level3Button.setBackground(new Color(100, 150, 255));
+            level3Button.setForeground(Color.WHITE);
+            level3Button.setFont(new Font("Arial", Font.BOLD, 20));
+            level3Button.setFocusPainted(false);
+            level3Button.addActionListener(e -> {
+                new App().loadMap();
+                spawnPlayerOnRoad(); // Reset posisi player ke awal
+                currentLevel = 3;
+                GameState = STATE_COUNTDOWN;
+                startCountdown();
+            });
+            panel.add(level3Button);
+
+            backButton = new JButton("BACK TO MENU");
+            backButton.setBounds(panelWidth - 150, 10, 140, 40);
+            backButton.setBackground(new Color(100, 150, 255));
+            backButton.setForeground(Color.WHITE);
+            backButton.setFont(new Font("Arial", Font.BOLD, 16));
+            backButton.setFocusPainted(false);
+              backButton.addActionListener(e -> {
+                  GameState = 5; // back to menu
+                  App.resetGame();
+                  new App().loadMap();
+                  // Reset player state as well
+                  spawnPlayerOnRoad();
+                  direction = "down";
+                  isMoving = false;
+                  spriteNum = 1;
+              });
+            panel.add(backButton);
+
+            tryAgainButton = new JButton("TRY AGAIN");
+            tryAgainButton.setBounds(400, 500, 150, 50);
+            tryAgainButton.setBackground(new Color(100, 255, 100));
+            tryAgainButton.setForeground(Color.BLACK);
+            tryAgainButton.setFont(new Font("Arial", Font.BOLD, 18));
+            tryAgainButton.setFocusPainted(false);
+            tryAgainButton.addActionListener(e -> {
+                app.loadMap();        // reload map from file (reset flood)
+                floodStep = 0;
+                isFlooding = false;
+                spawnPlayerOnRoad();  // reset player position
+                direction = "down";
+                isMoving = false;
+                spriteNum = 1;
+                GameState = STATE_COUNTDOWN;
+                startCountdown();
+                tryAgainButton.setVisible(false);
+                backToMenuButton.setVisible(false);
+                panel.requestFocusInWindow();
+            });
+            panel.add(tryAgainButton);
+
+            backToMenuButton = new JButton("BACK TO MENU");
+            backToMenuButton.setBounds(600, 500, 180, 50);
+            backToMenuButton.setBackground(new Color(255, 100, 100));
+            backToMenuButton.setForeground(Color.WHITE);
+            backToMenuButton.setFont(new Font("Arial", Font.BOLD, 18));
+            backToMenuButton.setFocusPainted(false);
+            backToMenuButton.addActionListener(e -> {
+                GameState = 5;
+                App.resetGame();
+                new App().loadMap();
+                tryAgainButton.setVisible(false);
+                backToMenuButton.setVisible(false);
+                panel.requestFocusInWindow();
+            });
+            panel.add(backToMenuButton);
+
+            // Set enabled based on unlocked levels
+            level1Button.setEnabled(true);
+            level2Button.setEnabled(unlockedLevels >= 2);
+            level3Button.setEnabled(unlockedLevels >= 3);
+
+            // Set visibility based on GameState
+            startButton.setVisible(GameState == 5);
+            level1Button.setVisible(GameState == 100);
+            level2Button.setVisible(GameState == 100);
+            level3Button.setVisible(GameState == 100);
+            backButton.setVisible(GameState == 1);
+            tryAgainButton.setVisible(false);
+            backToMenuButton.setVisible(false);
 
             panel.setFocusable(true);
 
@@ -286,20 +550,46 @@ public class App {
                 public void mousePressed(MouseEvent e) {
                     int x = e.getX();
                     int y = e.getY();
+                    if (GameState == 1) {
+                        int backButtonX = panelWidth - 150;
+                        int backButtonY = 10;
+                        int backButtonWidth = 140;
+                        int backButtonHeight = 40;
+                        if (x >= backButtonX && x <= backButtonX + backButtonWidth && y >= backButtonY && y <= backButtonY + backButtonHeight) {
+                            // Back to menu
+                            GameState = 5;
+                            if (gameTimer != null) gameTimer.stop();
+                            if (floodTimer != null) floodTimer.stop();
+                            // Reset map and player state when returning to menu
+                            App appInstance = new App();
+                            appInstance.loadMap();
+                            spawnPlayerOnRoad();
+                            direction = "down";
+                            isMoving = false;
+                            spriteNum = 1;
+                            return;
+                        }
+                    }
                     if (x >= 540 && x <= 740 && y >= 600 && y <= 650) {
                         GameState = 100;
                     } else if (x >= 540 && x <= 740 && y >= 250 && y <= 300) {
+                        App appInstance = new App();
+                        appInstance.loadMap();
                         currentLevel = 1;
-                        GameState = 1;
-                        startLevel();
+                        GameState = STATE_COUNTDOWN;
+                        startCountdown();
                     } else if (x >= 540 && x <= 740 && y >= 320 && y <= 370) {
+                        App appInstance = new App();
+                        appInstance.loadMap();
                         currentLevel = 2;
-                        GameState = 1;
-                        startLevel();
+                        GameState = STATE_COUNTDOWN;
+                        startCountdown();
                     } else if (x >= 540 && x <= 740 && y >= 390 && y <= 440) {
+                        App appInstance = new App();
+                        appInstance.loadMap();
                         currentLevel = 3;
-                        GameState = 1;
-                        startLevel();
+                        GameState = STATE_COUNTDOWN;
+                        startCountdown();
                     }
                 }
             });
@@ -321,7 +611,7 @@ public class App {
     }
 
     public void OnBoarding(Graphics g, Component c) {
-        ImageIcon logo = new ImageIcon("assets/Logo/Rescue Rush Wide Logo.png");
+        ImageIcon logo = new ImageIcon("assets/images/logo/rescue-rush-logo.png");
         g.drawImage(logo.getImage(), Screenwidth/4, Screenheight/4, Screenwidth/2, Screenheight/3, c);
         
         timerInternal = new Timer(2000, ev -> {
@@ -337,59 +627,13 @@ public class App {
     }
     
     public void MenuScreen(Graphics g, Component c) {
-        ImageIcon mainMenuBG = new ImageIcon("assets/menu-background.gif");
+        ImageIcon mainMenuBG = new ImageIcon("assets/images/background/menu-background.gif");
         g.drawImage(mainMenuBG.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
-
-        int buttonX = 540;
-        int buttonY = 600;
-        int buttonWidth = 200;
-        int buttonHeight = 50;
-
-        g.setColor(new Color(100, 150, 255));
-        g.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
-
-        g.setColor(Color.WHITE);
-        g.setFont(new Font("Arial", Font.BOLD, 20));
-        g.drawString("Start Game", buttonX + 50, buttonY + 35);
     }
 
     public void selectLevelSScreen(Graphics g, Component c) {
-        ImageIcon mainMenuBG = new ImageIcon("assets/menu-background.gif");
+        ImageIcon mainMenuBG = new ImageIcon("assets/images/background/menu-background.gif");
         g.drawImage(mainMenuBG.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
-
-        int buttonX = 540;
-        int buttonY = 250;
-        int buttonWidth = 170;
-        int buttonHeight = 50;
-
-        // button to start level 1
-        g.setColor(new Color(100, 150, 255));
-        g.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
-
-        g.setColor(Color.WHITE);
-        g.setFont(new Font("Arial", Font.BOLD, 20));
-        g.drawString("LEVEL 1", buttonX + 50, buttonY + 35);
-
-        //button to start level 2
-        buttonY += 70;
-
-        g.setColor(new Color(100, 150, 255));
-        g.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
-
-        g.setColor(Color.WHITE);
-        g.setFont(new Font("Arial", Font.BOLD, 20));
-        g.drawString("LEVEL 2", buttonX + 50, buttonY + 35);
-
-        //button to start level 3
-
-        buttonY += 70;
-        g.setColor(new Color(100, 150, 255));
-        g.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
-
-        g.setColor(Color.WHITE);
-        g.setFont(new Font("Arial", Font.BOLD, 20));
-        g.drawString("LEVEL 3", buttonX + 50, buttonY + 35);
-
     }
 
     // CHARACTER FUNCTION
@@ -463,52 +707,43 @@ public class App {
     }
 
     public void drawTileMap(Graphics g, Component c) {
-        try {
-            java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.FileReader("assets/maps/level1.txt"));
-            String line;
-            int row = 0;
-            while ((line = reader.readLine()) != null) {
-                for (int col = 0; col < line.length(); col++) {
-                    char tile = line.charAt(col);
-                    if (tile == '0') {
-                        g.drawImage(road, col * tileSize, row * tileSize, tileSize, tileSize, c);
-                    }
-                    if (tile == '1') {
-                        g.drawImage(grass, col * tileSize, row * tileSize, tileSize, tileSize, c);
-                    }
-                    if (tile == '2') {
-                        g.drawImage(water0, col * tileSize, row * tileSize, tileSize, tileSize, c);
-                    }
-                    if (tile == '3') {
-                        g.drawImage(waterup, col * tileSize, row * tileSize, tileSize, tileSize, c);
-                    }
-                    if (tile == '4') {
-                        g.drawImage(waterdown, col * tileSize, row * tileSize, tileSize, tileSize, c);
-                    }
-                    if (tile == '5') {  
-                        g.drawImage(waterleft, col * tileSize, row * tileSize, tileSize, tileSize, c);
-                    }
-                    if (tile == '6') {  
-                        g.drawImage(waterright, col * tileSize, row * tileSize, tileSize, tileSize, c);
-                    }
-                    if (tile == '7') {  
-                        g.drawImage(waterupright, col * tileSize, row * tileSize, tileSize, tileSize, c);
-                    }
-                    if (tile == '8') {  
-                        g.drawImage(waterupleft, col * tileSize, row * tileSize, tileSize, tileSize, c);
-                    }
-                    if (tile == '9') {  
-                        g.drawImage(waterdownright, col * tileSize, row * tileSize, tileSize, tileSize, c);
-                    }
-                    if (tile == 'A') {  
-                        g.drawImage(waterdownleft, col * tileSize, row * tileSize, tileSize, tileSize, c);
-                    }
+        for (int row = 0; row < map.length; row++) {
+            for (int col = 0; col < map[0].length; col++) {
+                char tile = map[row][col];
+                if (tile == '0') {
+                    g.drawImage(road, col * tileSize, row * tileSize, tileSize, tileSize, c);
                 }
-                row++;
+                if (tile == '1') {
+                    g.drawImage(grass, col * tileSize, row * tileSize, tileSize, tileSize, c);
+                }
+                if (tile == '2') {
+                    g.drawImage(water0, col * tileSize, row * tileSize, tileSize, tileSize, c);
+                }
+                if (tile == '3') {
+                    g.drawImage(waterup, col * tileSize, row * tileSize, tileSize, tileSize, c);
+                }
+                if (tile == '4') {
+                    g.drawImage(waterdown, col * tileSize, row * tileSize, tileSize, tileSize, c);
+                }
+                if (tile == '5') {  
+                    g.drawImage(waterleft, col * tileSize, row * tileSize, tileSize, tileSize, c);
+                }
+                if (tile == '6') {  
+                    g.drawImage(waterright, col * tileSize, row * tileSize, tileSize, tileSize, c);
+                }
+                if (tile == '7') {  
+                    g.drawImage(waterupright, col * tileSize, row * tileSize, tileSize, tileSize, c);
+                }
+                if (tile == '8') {  
+                    g.drawImage(waterupleft, col * tileSize, row * tileSize, tileSize, tileSize, c);
+                }
+                if (tile == '9') {  
+                    g.drawImage(waterdownright, col * tileSize, row * tileSize, tileSize, tileSize, c);
+                }
+                if (tile == 'A') {  
+                    g.drawImage(waterdownleft, col * tileSize, row * tileSize, tileSize, tileSize, c);
+                }
             }
-            reader.close();
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
@@ -520,7 +755,7 @@ public class App {
 
     public void loadMap() {
         try {
-            java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.FileReader("assets/maps/level1.txt"));
+            java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.FileReader("assets/data/maps/level1-map.txt"));
             java.util.List<String> lines = new java.util.ArrayList<>();
             String line;
             while ((line = reader.readLine()) != null) {
@@ -583,28 +818,103 @@ public class App {
         }
     }
 
-    static void startLevel() {
-        loadCasesFromTXT();
-        timeLeft = timeLimitSeconds;
+    static void loadUserData() {
+        try {
+            java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.FileReader("assets/data/user/user-data.txt"));
+            String line = reader.readLine();
+            if (line != null && line.startsWith("unlocked_levels=")) {
+                unlockedLevels = Integer.parseInt(line.substring(16));
+            }
+            reader.close();
+        } catch (Exception e) {
+            unlockedLevels = 1; // default
+        }
+    }
+
+    static void saveUserData() {
+        try {
+            java.io.PrintWriter writer = new java.io.PrintWriter("assets/data/user/user-data.txt");
+            writer.println("unlocked_levels=" + unlockedLevels);
+            writer.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    static void resetGame() {
+        if (gameTimer != null) gameTimer.stop();
+        if (floodTimer != null) floodTimer.stop();
         emergencies.clear();
         backpack.clear();
         evacuationQueue.clear();
-        setSafeZone();
-        evacCapacity = evacuationCapacity;
-        generateEmergencies();
-        if (gameTimer != null) gameTimer.stop();
-        gameTimer = new Timer(1000, ev -> {
-            timeLeft--;
-            if (timeLeft <= 0) {
-                GameState = 3; // fail
-                gameTimer.stop();
-            } else if (checkWinCondition()) {
-                GameState = 2; // win
-                gameTimer.stop();
-            }
-        });
-        gameTimer.start();
+        timeLeft = timeLimitSeconds;
+        isFlooding = false;
+        floodStep = 0;
+        isDialogShowing = false;
+        dialogText = "";
     }
+
+    static void startLevel() {
+    loadCasesFromTXT();
+    timeLeft = timeLimitSeconds;
+
+    emergencies.clear();
+    backpack.clear();
+    evacuationQueue.clear();
+
+    setSafeZone();
+    evacCapacity = evacuationCapacity;
+    generateEmergencies();
+
+    isFlooding = false;
+    floodStep = 0;
+    failReason = 0;
+    isMapFrozen = false; // 🔓 pastikan map UNFREEZE saat mulai level
+
+    if (floodTimer != null) floodTimer.stop();
+    if (gameTimer != null) gameTimer.stop();
+
+    gameTimer = new Timer(1000, ev -> {
+        timeLeft--;
+
+        // ===== START FLOOD =====
+        if (timeLeft == 60) {
+            isFlooding = true;
+            startFlooding();
+        }
+
+        // ===== FAIL : TIME UP =====
+        if (timeLeft <= 0) {
+            GameState = 3;          // FAIL
+            failReason = 1;         // time up
+            isMapFrozen = true;     // 🔒 FREEZE MAP DI SINI
+
+            gameTimer.stop();
+            if (floodTimer != null) floodTimer.stop();
+
+                 // (opsional, kalau pakai fade)
+        }
+
+        // ===== WIN CONDITION =====
+        else if (checkWinCondition()) {
+            GameState = 2;          // WIN
+            isMapFrozen = true;     // 🔒 FREEZE MAP DI SINI
+
+            if (currentLevel == 1) {
+                unlockedLevels = 2;
+                saveUserData();
+            } else if (currentLevel == 2) {
+                unlockedLevels = 3;
+                saveUserData();
+            }
+
+            gameTimer.stop();
+            if (floodTimer != null) floodTimer.stop();  
+        }
+    });
+
+    gameTimer.start();
+}
 
     static void generateEmergencies() {
         for (int i = 0; i < cases.size(); i++) {
@@ -620,9 +930,12 @@ public class App {
                 col = random.nextInt(map[0].length);
                 row = random.nextInt(map.length);
             }
-            int x = col * tileSize;
-            int y = (row - 1) * tileSize; // one tile above
-            emergencies.add(new int[]{x, y, type, 0, i});
+            // int logicX = col * tileSize;
+            // int logicY = row * tileSize;
+            int warnX = col * tileSize;
+            int warnY = (row - 1) * tileSize; // one tile above for warning image
+            // [warningX, warningY, type, resolved, i, logicRow, logicCol]
+            emergencies.add(new int[]{warnX, warnY, type, 0, i, row, col});
         }
     }
 
@@ -631,8 +944,48 @@ public class App {
         safeZone[1] = (map.length / 2) * tileSize;
     }
 
+    static void startFlooding() {
+        floodStep = 0;
+        floodTimer = new Timer(10000, ev -> { // every 10 seconds
+            floodMap();
+            floodStep++;
+            if (floodStep >= maxFloodSteps) {
+                // Continue flooding or stop, but since time will end, let it continue
+            }
+        });
+        floodTimer.start();
+    }
 
+    static void floodMap() {
+    if (isMapFrozen) return;
+    int rows = map.length;
+    int cols = map[0].length;
+    int s = floodStep;
 
+    int playerRow = playerY / tileSize;
+    int playerCol = playerX / tileSize;
+
+    for (int r = 0; r < rows; r++) {
+        for (int c = 0; c < cols; c++) {
+            boolean isOuterLayer =
+                r == s ||                      // atas
+                r == rows - 1 - s ||           // bawah
+                c == s ||                      // kiri
+                c == cols - 1 - s;             // kanan
+            // hanya ubah yang BUKAN air
+            if (isOuterLayer && map[r][c] != '2') {
+                map[r][c] = '2'; // jadi air
+                // Jika player berada di tile yang baru saja terendam -> game over
+                if (r == playerRow && c == playerCol) {
+                    GameState = 3; // fail
+                    failReason = 2; // flood
+                    if (gameTimer != null) gameTimer.stop();
+                    if (floodTimer != null) floodTimer.stop();
+                }
+            }
+        }
+    }
+}
 
 
     static boolean checkWinCondition() {
@@ -666,11 +1019,11 @@ public class App {
             return;
         }
         for (int[] e : emergencies) {
-            int eCol = e[0] / tileSize;
-            int eRow = e[1] / tileSize;
-            int dx = Math.abs(playerCol - eCol);
-            int dy = Math.abs(playerRow - eRow);
-            if (dx <= 1 && dy <= 1 && e[3] == 0) { // within 1 tile
+            int logicRow = e[5];
+            int logicCol = e[6];
+            int dx = Math.abs(playerCol - logicCol);
+            int dy = Math.abs(playerRow - logicRow);
+            if (dx <= 1 && dy <= 1 && e[3] == 0) { // within 1 tile of logic position
                 int caseIdx = e[4];
                 Map<String, String> caseData = cases.get(caseIdx);
                 String title = caseData.get("TITLE");
@@ -704,10 +1057,10 @@ public class App {
             int playerCol = playerX / tileSize;
             int playerRow = playerY / tileSize;
             for (int[] e : emergencies) {
-                int eCol = e[0] / tileSize;
-                int eRow = e[1] / tileSize;
-                int dx = Math.abs(playerCol - eCol);
-                int dy = Math.abs(playerRow - eRow);
+                int logicRow = e[5];
+                int logicCol = e[6];
+                int dx = Math.abs(playerCol - logicCol);
+                int dy = Math.abs(playerRow - logicRow);
                 if (dx <= 1 && dy <= 1 && e[3] == 0) {
                     int caseIdx = e[4];
                     Map<String, String> caseData = cases.get(caseIdx);
@@ -811,16 +1164,61 @@ public class App {
         g.drawString("SAFE", safeZone[0] + 5, safeZone[1] + 20);
     }
 
+    // --- POLISH: Blur for end screen ---
+static float endTextAlpha = 1f; // langsung tampil penuh
+
+void drawBlurredMap(Graphics2D g2, Component c) {
+    for (int i = -2; i <= 2; i++) {
+        for (int j = -2; j <= 2; j++) {
+            g2.translate(i, j);
+            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.08f));
+            drawTileMap(g2, c);
+            g2.translate(-i, -j);
+        }
+    }
+    g2.setComposite(AlphaComposite.SrcOver); // reset
+}
+
     void drawWinScreen(Graphics g, Component c) {
-        g.setColor(Color.GREEN);
-        g.setFont(new Font("Arial", Font.BOLD, 48));
-        g.drawString("Evacuation Successful!", Screenwidth/4, Screenheight/2);
+        Graphics2D g2 = (Graphics2D) g;
+        // 1. Blur map
+        drawBlurredMap(g2, c);
+        // 2. Overlay hitam transparan
+        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.7f));
+        g2.setColor(Color.BLACK);
+        g2.fillRect(0, 0, c.getWidth(), c.getHeight());
+        g2.setComposite(AlphaComposite.SrcOver);
+        // 3. Teks
+        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, endTextAlpha));
+        g2.setColor(Color.GREEN);
+        g2.setFont(new Font("Arial", Font.BOLD, 48));
+        g2.drawString("Evacuation Successful!", Screenwidth/4, Screenheight/2);
+        g2.setComposite(AlphaComposite.SrcOver);
     }
 
     void drawFailScreen(Graphics g, Component c) {
-        g.setColor(Color.RED);
-        g.setFont(new Font("Arial", Font.BOLD, 48));
-        g.drawString("Time is up. Evacuation failed.", Screenwidth/4, Screenheight/2);
+        Graphics2D g2 = (Graphics2D) g;
+        // 1. Blur map
+        drawBlurredMap(g2, c);
+        // 2. Overlay hitam transparan
+        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.7f));
+        g2.setColor(Color.BLACK);
+        g2.fillRect(0, 0, c.getWidth(), c.getHeight());
+        g2.setComposite(AlphaComposite.SrcOver);
+        // 3. Teks
+        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, endTextAlpha));
+        g2.setFont(new Font("Arial", Font.BOLD, 48));
+        if (failReason == 2) {
+            g2.setColor(Color.RED);
+            g2.drawString("Evacuation failed: Flooded!", Screenwidth/4, Screenheight/2);
+        } else if (failReason == 1) {
+            g2.setColor(Color.ORANGE);
+            g2.drawString("Time is up. Evacuation failed.", Screenwidth/4, Screenheight/2);
+        } else {
+            g2.setColor(Color.ORANGE);
+            g2.drawString("Evacuation failed.", Screenwidth/4, Screenheight/2);
+        }
+        g2.setComposite(AlphaComposite.SrcOver);
     }
 
 }
