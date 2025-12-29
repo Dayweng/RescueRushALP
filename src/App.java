@@ -1,14 +1,14 @@
 import java.awt.*;
 import java.awt.event.*;
-import javax.swing.*;
 import java.awt.image.BufferedImage;
-import java.util.Random;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import javax.swing.*;
 
 public class App {
     // Track fail reason: 0 = none, 1 = times up, 2 = flood
@@ -190,7 +190,6 @@ public class App {
 
 
     // map games
-
     public BufferedImage imagemap1;
 
 
@@ -623,7 +622,6 @@ public class App {
             timerInternal.stop();
             GameState = 5;
         }
-
     }
     
     public void MenuScreen(Graphics g, Component c) {
@@ -636,6 +634,7 @@ public class App {
         g.drawImage(mainMenuBG.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
     }
 
+    
     // CHARACTER FUNCTION
 
     public void loadCharacterImages() {
@@ -784,7 +783,7 @@ public class App {
         return isWalkable(left, top) && isWalkable(right, top) && isWalkable(left, bottom) && isWalkable(right, bottom);
     }
 
-    private static boolean isWalkable(int x, int y) {
+    public static boolean isWalkable(int x, int y) {
         int col = x / tileSize;
         int row = y / tileSize;
         if (col < 0 || col >= map[0].length || row < 0 || row >= map.length) {
