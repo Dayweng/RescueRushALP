@@ -90,10 +90,12 @@ public class App {
     static JButton level1Button;
     static JButton level2Button;
     static JButton level3Button;
+    static JButton settingButton;
     static JButton backButton;
     static JButton restartButton;
     static JButton tryAgainButton;
     static JButton backToMenuButton;
+    static JSlider volumeSlider;
 
     // User progress
     static int unlockedLevels = 1;
@@ -217,13 +219,13 @@ public class App {
     public static void playBGM(String path) {
     try {
             AudioInputStream audioStream =
-                    AudioSystem.getAudioInputStream(new File(path));
+            AudioSystem.getAudioInputStream(new File(path));
 
             menuBGM = AudioSystem.getClip();
             menuBGM.open(audioStream);
 
             volumeControl = (FloatControl)
-                    menuBGM.getControl(FloatControl.Type.MASTER_GAIN);
+            menuBGM.getControl(FloatControl.Type.MASTER_GAIN);
 
             menuBGM.loop(Clip.LOOP_CONTINUOUSLY);
             menuBGM.start();
@@ -263,6 +265,7 @@ public class App {
 
             GAME STATE 0 = ONBOARDING
             GAME STATE 5 = MAIN MENU
+            GAME STATE 10 = SETTINGS
             GAME STATE 100 = LEVEL SELECTION
             GAME STATE 101 = LOADING LEVEL 1
             GAME STATE 1 = IN GAME (LEVEL 1,2,3)
@@ -292,6 +295,8 @@ public class App {
                         app.MenuScreen(g, this);
                     } else if (GameState == 101) {
                         app.loadingScreenLevel1(g, this);
+                    } else if (GameState == 10) {
+                        app.settings(g, this);
                     } else if (GameState == STATE_COUNTDOWN) {
                         app.drawTileMap(g, this);
                         Graphics2D g2 = (Graphics2D) g;
@@ -305,6 +310,7 @@ public class App {
                         int y = (getHeight() + fm.getAscent()) / 2;
                         g2.drawString(text, x, y);
                         startButton.setVisible(false);
+                        settingButton.setVisible(false);
                         restartButton.setVisible(false);
                         level1Button.setVisible(false);
                         level2Button.setVisible(false);
@@ -394,15 +400,29 @@ public class App {
             //#endregion
 
             //#region UI BUTTONS
+            // Volume Slider
+            volumeSlider = new JSlider(20, 100, 60);
+            volumeSlider.setBounds((Screenwidth/2)-150, (Screenheight/2)-20, 300, 40);
+            panel.add(volumeSlider);
+            
             // Create buttons
             startButton = new JButton("START GAME");
-            startButton.setBounds(540, 600, 200, 50);
+            startButton.setBounds(540, 540, 200, 50);
             startButton.setBackground(new Color(100, 150, 255));
             startButton.setForeground(Color.WHITE);
             startButton.setFont(new Font("Arial", Font.BOLD, 20));
             startButton.setFocusPainted(false);
             startButton.addActionListener(e -> GameState = 100);
             panel.add(startButton);
+
+            settingButton = new JButton("SETTINGS");
+            settingButton.setBounds(540, 600, 200, 50);
+            settingButton.setBackground(new Color(250, 250, 100));
+            settingButton.setForeground(Color.WHITE);
+            settingButton.setFont(new Font("Arial", Font.BOLD, 20));
+            settingButton.setFocusPainted(false);
+            settingButton.addActionListener(e -> GameState = 10);
+            panel.add(settingButton);
 
             restartButton = new JButton("RESTART");
             restartButton.setBounds(540, 660, 200, 50);
@@ -534,6 +554,17 @@ public class App {
 
             //#region INPUT HANDLING
             panel.setFocusable(true);
+
+            // volume slider listener
+            volumeSlider.addChangeListener(e -> {
+                if (volumeControl != null) {
+                    float min = -80; // usually -80
+                    float max = 0; // usually 0
+                    float value = volumeSlider.getValue() / 100f;
+                    float volume = min + (max - min) * value;
+                    volumeControl.setValue(volume);
+                }
+            });
 
             // keyboard: directly modify static state for smooth movement
             panel.addKeyListener(new KeyAdapter() {
@@ -676,6 +707,8 @@ public class App {
         restartButton.setVisible(false);
         tryAgainButton.setVisible(false);
         backToMenuButton.setVisible(false);
+        volumeSlider.setVisible(false);
+        settingButton.setVisible(false);
         
         if (!timerRunning && currentLevel == 0) {
             currentLevel = 5;
@@ -696,6 +729,8 @@ public class App {
         g.drawImage(mainMenuBG.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
 
         startButton.setVisible(true);
+        volumeSlider.setVisible(false);
+        settingButton.setVisible(true);
         restartButton.setVisible(true);
         level1Button.setVisible(false);
         level2Button.setVisible(false);
@@ -708,11 +743,18 @@ public class App {
     public void selectLevelSScreen(Graphics g, Component c) {
         ImageIcon BGonly = new ImageIcon("assets/images/background/BGonly.jpg");
         g.drawImage(BGonly.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
+        volumeSlider.setVisible(false);
+        settingButton.setVisible(false);
     }
 
     public void settings(Graphics g, Component c) {
         ImageIcon BGonly = new ImageIcon("assets/images/background/BGonly.jpg");
         g.drawImage(BGonly.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
+        volumeSlider.setVisible(true);
+        startButton.setVisible(false);
+        settingButton.setVisible(false);
+        restartButton.setVisible(false);
+        backToMenuButton.setVisible(true);
     }
 
     public void loadingScreenLevel1(Graphics g, Component c) {
