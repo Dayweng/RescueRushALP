@@ -3,12 +3,17 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.FloatControl;
 import javax.swing.*;
 //#endregion
 
@@ -21,6 +26,8 @@ public class App {
     static int playerY;
     static int speed = 4;
     static int GameState = 0; //States of the game screen
+    static Clip menuBGM; //music clip
+    static FloatControl volumeControl; //music volume control
     
     //Loading Variables
     static Timer timer;
@@ -206,6 +213,26 @@ public class App {
         }
     }
 
+    //#region MUSIC FUNCTION
+    public static void playBGM(String path) {
+    try {
+            AudioInputStream audioStream =
+                    AudioSystem.getAudioInputStream(new File(path));
+
+            menuBGM = AudioSystem.getClip();
+            menuBGM.open(audioStream);
+
+            volumeControl = (FloatControl)
+                    menuBGM.getControl(FloatControl.Type.MASTER_GAIN);
+
+            menuBGM.loop(Clip.LOOP_CONTINUOUSLY);
+            menuBGM.start();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    //#endregion
     //#region WINDOW CONFIG
 
     public static void main(String[] args) {
@@ -218,6 +245,7 @@ public class App {
             frame.setSize(1366, 768);
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setResizable(false);
+            playBGM("assets/music/BGMmenu.wav");
             //frame.setUndecorated(true);
 
             // create an instance so we can use non-static (public void) methods
@@ -245,7 +273,7 @@ public class App {
             */
 
             //#region internal timer str
-            timerInternal = new Timer(2000, ev -> {
+            timerInternal = new Timer(5000, ev -> {
                 nextScreen = 1;
                 timerInternal.stop();
                 timerRunning = false;
@@ -642,8 +670,8 @@ public class App {
 
     //#region GAME SCREENS LOGIC
     public void OnBoarding(Graphics g, Component c) {
-        ImageIcon logo = new ImageIcon("assets/images/logo/rescue-rush-logo.png");
-        g.drawImage(logo.getImage(), Screenwidth/4, Screenheight/4, Screenwidth/2, Screenheight/3, c);
+        ImageIcon OnBoardingScrn = new ImageIcon("assets/images/background/Onboarding.gif");
+        g.drawImage(OnBoardingScrn.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
 
         restartButton.setVisible(false);
         tryAgainButton.setVisible(false);
@@ -664,7 +692,7 @@ public class App {
     }
     
     public void MenuScreen(Graphics g, Component c) {
-        ImageIcon mainMenuBG = new ImageIcon("assets/images/background/menu-background.gif");
+        ImageIcon mainMenuBG = new ImageIcon("assets/images/background/MainMenu.gif");
         g.drawImage(mainMenuBG.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
 
         startButton.setVisible(true);
@@ -678,8 +706,13 @@ public class App {
     }
 
     public void selectLevelSScreen(Graphics g, Component c) {
-        ImageIcon mainMenuBG = new ImageIcon("assets/images/background/menu-background.gif");
-        g.drawImage(mainMenuBG.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
+        ImageIcon BGonly = new ImageIcon("assets/images/background/BGonly.jpg");
+        g.drawImage(BGonly.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
+    }
+
+    public void settings(Graphics g, Component c) {
+        ImageIcon BGonly = new ImageIcon("assets/images/background/BGonly.jpg");
+        g.drawImage(BGonly.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
     }
 
     public void loadingScreenLevel1(Graphics g, Component c) {
