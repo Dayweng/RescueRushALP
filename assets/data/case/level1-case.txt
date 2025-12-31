@@ -9,7 +9,7 @@ ID=L1_G_01
 TYPE=GREEN
 TITLE=Flashlight
 DESCRIPTION=A flashlight is found inside an abandoned house.
-ITEM_REWARD=flashlight
+ITEM_REWARD=FLASHLIGHT
 REQUIRED_ITEM=none
 RESOLVE_TIME_SEC=5
 
@@ -20,7 +20,7 @@ TYPE=RED
 TITLE=Trapped Elderly
 DESCRIPTION=An elderly person is trapped inside a dark flooded house and cannot find the exit.
 ITEM_REWARD=none
-REQUIRED_ITEM=flashlight
+REQUIRED_ITEM=FLASHLIGHT
 EVAC_TYPE=person
 RESOLVE_TIME_SEC=20
 
@@ -30,7 +30,7 @@ ID=L1_G_02
 TYPE=GREEN
 TITLE=Life Jacket
 DESCRIPTION=A life jacket is floating near a flooded street.
-ITEM_REWARD=life_jacket
+ITEM_REWARD=LIFE JACKET
 REQUIRED_ITEM=none
 RESOLVE_TIME_SEC=5
 
@@ -41,7 +41,7 @@ TYPE=RED
 TITLE=Child in Flood
 DESCRIPTION=A child is stranded and cannot swim in deep flood water.
 ITEM_REWARD=none
-REQUIRED_ITEM=life_jacket
+REQUIRED_ITEM=LIFE JACKET
 EVAC_TYPE=person
 RESOLVE_TIME_SEC=20
 
@@ -51,7 +51,7 @@ ID=L1_G_03
 TYPE=GREEN
 TITLE=Emergency Food
 DESCRIPTION=Canned food supplies are found in a small shop.
-ITEM_REWARD=food
+ITEM_REWARD=FOOD
 REQUIRED_ITEM=none
 RESOLVE_TIME_SEC=5
 
@@ -61,7 +61,7 @@ ID=L1_G_04
 TYPE=GREEN
 TITLE=Pet Food
 DESCRIPTION=Animal food is found near a flooded pet store.
-ITEM_REWARD=pet_food
+ITEM_REWARD=PET FOOD
 REQUIRED_ITEM=none
 RESOLVE_TIME_SEC=5
 
@@ -83,7 +83,7 @@ TYPE=RED
 TITLE=Trapped Animal
 DESCRIPTION=A frightened animal refuses to move and must be lured with food.
 ITEM_REWARD=none
-REQUIRED_ITEM=pet_food
+REQUIRED_ITEM=PET FOOD
 EVAC_TYPE=animal
 RESOLVE_TIME_SEC=15
 

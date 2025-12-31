@@ -247,7 +247,7 @@ public class App {
             frame.setSize(1366, 768);
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setResizable(false);
-            playBGM("assets/music/BGMmenu.wav");
+            playBGM("assets/sounds/BGMmenu.wav");
             //frame.setUndecorated(true);
 
             // create an instance so we can use non-static (public void) methods
@@ -326,6 +326,7 @@ public class App {
                         app.drawEmergencies(g, this);
                         app.drawSafeZone(g, this);
                         app.drawTimer(g, this);
+                        volumeSlider.setVisible(false);
                         startButton.setVisible(false);
                         restartButton.setVisible(false);
                         level1Button.setVisible(false);
@@ -701,7 +702,7 @@ public class App {
 
     //#region GAME SCREENS LOGIC
     public void OnBoarding(Graphics g, Component c) {
-        ImageIcon OnBoardingScrn = new ImageIcon("assets/images/background/Onboarding.gif");
+        ImageIcon OnBoardingScrn = new ImageIcon("assets/images/background/onboarding.gif");
         g.drawImage(OnBoardingScrn.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
 
         restartButton.setVisible(false);
@@ -725,7 +726,7 @@ public class App {
     }
     
     public void MenuScreen(Graphics g, Component c) {
-        ImageIcon mainMenuBG = new ImageIcon("assets/images/background/MainMenu.gif");
+        ImageIcon mainMenuBG = new ImageIcon("assets/images/background/main-menu.gif");
         g.drawImage(mainMenuBG.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
 
         startButton.setVisible(true);
@@ -741,14 +742,14 @@ public class App {
     }
 
     public void selectLevelSScreen(Graphics g, Component c) {
-        ImageIcon BGonly = new ImageIcon("assets/images/background/BGonly.jpg");
+        ImageIcon BGonly = new ImageIcon("assets/images/background/main-background.jpg");
         g.drawImage(BGonly.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
         volumeSlider.setVisible(false);
         settingButton.setVisible(false);
     }
 
     public void settings(Graphics g, Component c) {
-        ImageIcon BGonly = new ImageIcon("assets/images/background/BGonly.jpg");
+        ImageIcon BGonly = new ImageIcon("assets/images/background/main-background.jpg");
         g.drawImage(BGonly.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
         volumeSlider.setVisible(true);
         startButton.setVisible(false);
