@@ -1,16 +1,16 @@
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.FloatControl;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Random;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.FloatControl;
 import javax.swing.*;
 
 public class Main {
@@ -60,10 +60,12 @@ public class Main {
 
     // Navigation Variables
     static boolean onboardingTimerStarted = false;
+    static boolean levelLoadingTimerStarted = false;
     static int gameState = 0;
 
     // UI Variables
     static JButton startButton;
+    static JButton settingsButton;
     static JButton level_1;
     static JButton level_2;
     static JButton level_3;
@@ -72,10 +74,31 @@ public class Main {
     static JButton selectLevelButton;
     static JButton nextLevelButton;
     static JButton exitLevelButton;
+    static JSlider volumeSlider;
 
-    public BufferedImage up1, up2, down1, down2, left1, left2, right1, right2;
-    public BufferedImage grass, water0, waterup, waterdown, waterleft, waterright, waterupright, waterupleft, waterdownright, waterdownleft, road;
-    public BufferedImage warningGreen, warningYellow, warningRed;
+    static BufferedImage up1, up2, down1, down2, left1, left2, right1, right2;
+    static BufferedImage grass, water0, waterup, waterdown, waterleft, waterright, waterupright, waterupleft, waterdownright, waterdownleft, road;
+    static BufferedImage warningGreen, warningYellow, warningRed;
+
+    //UI Scalling Var
+    static int BASE_CARD_W = 500;
+    static int BASE_CARD_H = 640;
+    static double scale = frameWidth / 1920.0;
+    static int cardW = (int)(frameWidth * 0.26);   // responsive width
+    static int cardH = (int)(cardW * 1.28);        // keep 500x640 ratio
+    static int centerX = frameWidth / 2;
+    static int centerY = frameHeight / 2;
+    // This is for Level Cards
+    static int gap = (int)(60 * scale);
+    static int level2X = centerX - cardW / 2;
+    static int level1X = level2X - cardW - gap;
+    static int level3X = level2X + cardW + gap;
+    static int cardsY = (int)(frameHeight * 0.18);
+    //Back Button Size & Position
+    static int backW = (int)(220 * scale);
+    static int backH = (int)(70 * scale);
+    static int backX = frameWidth / 2 - backW / 2;
+
 
     // Music Variables
     static Clip menuBGM;
@@ -84,10 +107,12 @@ public class Main {
 
     //#region MAIN SYSTEM
     public static void main(String[] args) {
+        // Game Properties
+        System.out.println("Game Started Window Size: " + frameWidth + "x" + frameHeight);
         SwingUtilities.invokeLater(()-> {
             JFrame mainFrame = new JFrame();
             
-            mainFrame.setSize(1366, 768);
+            mainFrame.setSize(frameWidth, frameHeight);
             mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             mainFrame.setResizable(false);
             mainFrame.setVisible(true);
@@ -106,15 +131,33 @@ public class Main {
                     super.paintComponent(g);
 
                     startButton.setVisible(gameState == 4);
+                    settingsButton.setVisible(gameState == 4);
                     level_1.setVisible(gameState == 5);
                     level_2.setVisible(gameState == 5);
                     level_3.setVisible(gameState == 5);
-                    backButton.setVisible(gameState == 5);
+                    backButton.setVisible(gameState == 5 || gameState == 10);
+                    volumeSlider.setVisible(gameState == 10);
                     retryButton.setVisible(gameState == 6 && results.equals("TIME"));
                     selectLevelButton.setVisible(gameState == 6 || gameState == 2 || gameState == 3 );
                     nextLevelButton.setVisible(gameState == 6 && results.equals("SUCCESS"));
                     exitLevelButton.setVisible(gameState == 1);
 
+                    //#region Game states
+                    /* 
+                    GAME STATE 0: Onboarding Screen
+                    GAME STATE 1: Level 1 Screen
+                    GAME STATE 2: Level 2 Screen
+                    GAME STATE 3: Level 3 Screen
+                    GAME STATE 4: Main Menu Screen
+                    GAME STATE 5: Level Selection Screen
+                    GAME STATE 6: Result Screen
+                    GAME STATE 7: Paused Screen (NOT YET IMPLEMENTED)
+
+                    GAME STATE 10: Settings Screen
+                    GAME STATE 11: Loading Level 1
+                    GAME STATE 12: Loading Level 2 (NOT YET IMPLEMENTED)
+                    GAME STATE 13: Loading Level 3 (NOT YET IMPLEMENTED)
+                     */
                     if (gameState == 0) { 
                         app.OnBoarding(g, this);
                     } else if (gameState == 4) {
@@ -125,16 +168,45 @@ public class Main {
                         app.ResultScreen(g, this);
                     } else if (gameState == 1) {
                         app.Level1_Screen(g, this);
+                        levelLoadingTimerStarted = false;
                     } else if (gameState == 2) {
                         app.Level2_Screen(g, this);
+                        levelLoadingTimerStarted = false;
                     } else if (gameState == 3) {
                         app.Level3_Screen(g, this);
+                        levelLoadingTimerStarted = false;
+                    } else if (gameState == 10) {
+                        app.Setting(g, this);
+                    } else if (gameState == 11) {
+                        app.level1_loading(g, this);
+                    } else if (gameState == 12) {
+                        app.level2_loading(g, this);
+                    } else if (gameState == 13) {
+                        app.level3_loading(g, this);
                     }
                 }
             };
             gamePanel.setLayout(null);
+            gamePanel.setPreferredSize(new Dimension(frameWidth, frameHeight));
+            gamePanel.setSize(frameWidth, frameHeight);
+            System.out.println("Panel size: " + gamePanel.getWidth() + " x " + gamePanel.getHeight());
+            System.out.println("Card size: " + cardW + " x " + cardH);
 
             //#region UI COMPONENTS INITIALIZATION
+
+            // Volume Slider
+            volumeSlider = new JSlider(50, 100, 70);
+            volumeSlider.setBounds(centerX-150, centerY, 300, 40);
+            volumeSlider.setOpaque(false); // defolt bg transparent
+            gamePanel.add(volumeSlider);
+
+            // setting button
+            settingsButton = createImageButton(
+                "assets/images/buttons/setting-button.png",
+                centerX(400), 600, 400, 80,
+                () -> gameState = 10,
+                gamePanel
+            );
 
             // start button
             startButton = createImageButton(
@@ -144,34 +216,35 @@ public class Main {
                 gamePanel
             );
 
-            // level 1 button
+            // LEVEL 1
             level_1 = createImageButton(
                 "assets/images/buttons/level1-button.png",
-                centerX(400), 150, 400, 80,
-                () -> gameState = 1,
+                level1X, cardsY, cardW, cardH,
+                () -> gameState = 11,
                 gamePanel
             );
 
-            // level 2 button
+            // LEVEL 2
             level_2 = createImageButton(
                 "assets/images/buttons/level2-button.png",
-                centerX(400), 250, 400, 80,
-                () -> gameState = 2,
+                level2X, cardsY,
+                cardW, cardH,
+                () -> gameState = 12,
                 gamePanel
             );
 
-            // level 3 button
+            // LEVEL 3
             level_3 = createImageButton(
                 "assets/images/buttons/level3-button.png",
-                centerX(400), 350, 400, 80,
-                () -> gameState = 3,
+                level3X, cardsY, cardW, cardH,
+                () -> gameState = 13,
                 gamePanel
             );
 
             // back button
             backButton = createImageButton(
                 "assets/images/buttons/back-button.png",
-                centerX(400), 450, 400, 80,
+                backX, (frameHeight/2)+250, backW, backH,
                 () -> gameState = 4,
                 gamePanel
             );
@@ -302,6 +375,16 @@ public class Main {
                 }
             });
 
+            volumeSlider.addChangeListener(e -> {
+                if (volumeControl != null) {
+                    float min = volumeControl.getMinimum(); // usually -80
+                    float max = volumeControl.getMaximum(); // usually 0
+                    float value = volumeSlider.getValue() / 100f;
+                    float volume = min + (max - min) * value;
+                    volumeControl.setValue(volume);
+                }
+            });
+
             ////#endregion
 
 
@@ -325,6 +408,7 @@ public class Main {
         g.drawImage(OnBoardingVideo.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
 
         if(!onboardingTimerStarted) {
+            System.out.println("Onboarding Screen...");
             onboardingTimerStarted = true;
             timerDelayed(5000, () -> gameState = 4);
         }
@@ -336,10 +420,52 @@ public class Main {
         g.drawImage(MainMenuBg.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
     }
 
+    // Setting screen
+    public void Setting(Graphics g, Component c) {
+        ImageIcon LevelScreenBG = new ImageIcon("assets/images/background/main-background.jpg");
+        g.drawImage(LevelScreenBG.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
+    }
+
     // select level screen
     public void LevelScreen(Graphics g, Component c) {
         ImageIcon LevelScreenBg = new ImageIcon("assets/images/background/main-background.jpg");
         g.drawImage(LevelScreenBg.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
+    }
+
+    // Level 1 Loading
+    public void level1_loading(Graphics g, Component c) {
+        ImageIcon LoadingL1 = new ImageIcon("assets/images/background/Loading L1.gif");
+        g.drawImage(LoadingL1.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
+
+        if(!levelLoadingTimerStarted) {
+            levelLoadingTimerStarted = true;
+            System.out.println("Loading Level 1...");
+            timerDelayed(5000, () -> gameState = 1);
+        }
+    }
+
+    // Level 2 Loading
+    public void level2_loading(Graphics g, Component c) {
+        ImageIcon LoadingL2 = new ImageIcon("assets/images/background/Loading L2.gif");
+        g.drawImage(LoadingL2.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
+
+        if(!levelLoadingTimerStarted) {
+            levelLoadingTimerStarted = true;
+            System.out.println("Loading Level 2...");
+            timerDelayed(5000, () -> gameState = 2);
+        }
+    }
+
+    // Level 3 Loading
+    public void level3_loading(Graphics g, Component c) {
+        ImageIcon LoadingL3 = new ImageIcon("assets/images/background/Loading L3.gif");
+        g.drawImage(LoadingL3.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
+
+        if(!levelLoadingTimerStarted) {
+            levelLoadingTimerStarted = true;
+            System.out.println("Loading Level 3...");
+            timerDelayed(5000, () -> gameState = 3);
+        }
     }
 
     // counting down screen
