@@ -155,8 +155,8 @@ public class Main {
 
                     GAME STATE 10: Settings Screen
                     GAME STATE 11: Loading Level 1
-                    GAME STATE 12: Loading Level 2 (NOT YET IMPLEMENTED)
-                    GAME STATE 13: Loading Level 3 (NOT YET IMPLEMENTED)
+                    GAME STATE 12: Loading Level 2
+                    GAME STATE 13: Loading Level 3
                      */
                     if (gameState == 0) { 
                         app.OnBoarding(g, this);
@@ -203,7 +203,7 @@ public class Main {
             // setting button
             settingsButton = createImageButton(
                 "assets/images/buttons/setting-button.png",
-                centerX(400), 600, 400, 80,
+                centerX(400), 500, 400, 80,
                 () -> gameState = 10,
                 gamePanel
             );
@@ -211,7 +211,7 @@ public class Main {
             // start button
             startButton = createImageButton(
                 "assets/images/buttons/start-button.png",
-                centerX(400), 500, 400, 80,
+                centerX(400), 400, 400, 80,
                 () -> gameState = 5,
                 gamePanel
             );
@@ -357,6 +357,10 @@ public class Main {
                             showMessage = false;
                             message = "";
                         }
+                    }
+                    if (key == KeyEvent.VK_ESCAPE) {
+                        System.out.println("Game Exited by User");
+                        System.exit(0);
                     }
                     if (showMessage && (key == KeyEvent.VK_1 || key == KeyEvent.VK_2)) {
                         if(key == KeyEvent.VK_1) {
