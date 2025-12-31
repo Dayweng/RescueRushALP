@@ -33,14 +33,14 @@ public class Main {
     static boolean showMessage = false;
     static boolean warningMessage = false;
 
-    static int timeLimitSeconds = 100;
+    static int timeLimitSeconds = 300;
     static int timeLeft = timeLimitSeconds;
     static Timer gameTimeTimer;
 
     static int backpack = 0;
     static int[] backpackValue = new int[2];
     static String[] backpackItems = new String[2];
-    static int evacuated = 6;
+    static int evacuated = 0;
     static int totalEvacuated;
 
     static ArrayList<String[]> Emergency = new ArrayList<>();
@@ -91,7 +91,7 @@ public class Main {
             mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             mainFrame.setResizable(false);
             mainFrame.setVisible(true);
-            // playBGM("assets/sounds/BGMmenu.wav");
+            playBGM("assets/sounds/BGMmenu.wav");
 
             Main app = new Main();
 
