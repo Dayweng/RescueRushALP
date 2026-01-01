@@ -36,7 +36,7 @@ public class Main {
     static boolean showMessage = false;
     static boolean warningMessage = false;
 
-    static int timeLimitSeconds = 300;
+    static int timeLimitSeconds = 71;
     static int timeLeft = timeLimitSeconds;
     static Timer gameTimeTimer;
 
@@ -44,6 +44,7 @@ public class Main {
     static boolean isMapFrozen = false;
     static int floodStep = 0;
     static Timer floodTimer;
+    static Timer earthquakeTimer;
 
     static int backpack = 0;
     static int[] backpackValue = new int[2];
@@ -87,7 +88,8 @@ public class Main {
 
     static BufferedImage up1, up2, down1, down2, left1, left2, right1, right2;
     static BufferedImage grass, water0, waterup, waterdown, waterleft, waterright, waterupright, waterupleft, waterdownright, waterdownleft, road;
-    static BufferedImage warningGreen, warningYellow, warningRed;
+    static BufferedImage warningGreen, warningYellow, warningRed, earthquakeBlock;
+    static BufferedImage house1;
 
     //UI Scalling Var
     static int BASE_CARD_W = 500;
@@ -147,7 +149,7 @@ public class Main {
                     level_3.setVisible(gameState == 5);
                     backButton.setVisible(gameState == 5 || gameState == 10);
                     volumeSlider.setVisible(gameState == 10);
-                    retryButton.setVisible(gameState == 6 && results.equals("TIME"));
+                    retryButton.setVisible(gameState == 6 && (results.equals("TIME") || results.equals("FLOODED")));
                     selectLevelButton.setVisible(gameState == 6);
                     nextLevelButton.setVisible(gameState == 6 && results.equals("SUCCESS"));
                     exitLevelButton.setVisible(gameState == 1 || gameState == 2);
@@ -284,6 +286,7 @@ public class Main {
                     app.resetGame();
                     gameState = 1;
                     level1Inizialized = false;
+                    level2Inizialized = false;
                 },
                 gamePanel
             );
@@ -296,6 +299,7 @@ public class Main {
                     app.resetGame();
                     gameState = 5;
                     level1Inizialized = false;
+                    level2Inizialized = false;
                     levelUIRefreshed = false;
                 },
                 gamePanel
@@ -319,6 +323,7 @@ public class Main {
                     app.resetGame();
                     gameState = 5;
                     level1Inizialized = false;
+                    level2Inizialized = false;
                 },
                 gamePanel
             );
@@ -452,8 +457,14 @@ public class Main {
 
     // main menu screen
     public void MainMenu(Graphics g, Component c) {
+
         ImageIcon MainMenuBg = new ImageIcon("assets/images/background/main-menu.gif");
         g.drawImage(MainMenuBg.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
+
+        g.setFont(getGameFont(24f));
+        g.setColor(Color.WHITE);
+
+        g.drawString("press esc to quit", centerX(180), 670);
     }
 
     // Setting screen
@@ -679,7 +690,7 @@ public class Main {
             right2 = javax.imageio.ImageIO.read(new java.io.File("assets/images/character/boy_right_2.png"));
 
             // tiles
-            grass = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/grass01.png"));
+            grass = javax.imageio.ImageIO.read(new java.io.File("assets/images/house/house1-green-up.png"));
             water0 = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/water01.png"));
             waterup = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/water08.png"));
             waterdown = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/water03.png"));
@@ -695,6 +706,8 @@ public class Main {
             warningRed = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-red.png"));
             warningYellow = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-yellow.png"));
             warningRed = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-red.png"));
+            earthquakeBlock = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/crate.png"));
+            house1 = javax.imageio.ImageIO.read(new java.io.File("assets/images/house/house1.png"));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -787,6 +800,9 @@ public class Main {
                 if (tile == 'A') {  
                     g.drawImage(waterdownleft, col * tileSize, row * tileSize, tileSize, tileSize, c);
                 }
+                if (tile == 'X') {  
+                    g.drawImage(earthquakeBlock, col * tileSize, row * tileSize, tileSize, tileSize, c);
+                }
             }
         }
     }
@@ -848,23 +864,59 @@ public class Main {
 
     static void startFlooding() {
 
-    if (floodTimer != null) floodTimer.stop();
+        if (floodTimer != null) floodTimer.stop();
 
-    floodStep = 0;
-    isFlooding = true;
+        floodStep = 0;
+        isFlooding = true;
 
-    // flood setiap 10 detik (simple & stabil)
-    floodTimer = new Timer(10000, e -> {
-        floodMap();
-        floodStep++;
-    });
+        floodTimer = new Timer(10000, e -> {
+            floodMap();
+            floodStep++;
+        });
 
-    floodTimer.start();
-}
+        floodTimer.start();
+    }
 
+    // start earthquake
+    static void startEarthquake() {
+
+        if (earthquakeTimer != null) earthquakeTimer.stop();
+
+        earthquakeTimer = new Timer(10000, e -> {
+            earthquakeMap();
+        });
+
+        earthquakeTimer.start();
+    }
+
+
+    // earthquake map
+    static void earthquakeMap() {
+
+        if (isMapFrozen) return;
+
+        int row, col;
+        int attempts = 0;
+
+        do {
+            row = random.nextInt(map.length);
+            col = random.nextInt(map[0].length);
+            attempts++;
+            if (attempts > 100) return; // anti infinite loop
+        }
+        while (
+            map[row][col] != '0' ||           // hanya road
+            (row == playerY / tileSize &&
+            col == playerX / tileSize)       // jangan timpa player
+        );
+
+        // ubah road jadi obstacle gempa
+        map[row][col] = 'X';
+    }
+
+    // flood map
     static void floodMap() {
 
-    // REM DARURAT (INI YANG BIKIN TIDAK BOCOR)
     if (isMapFrozen) return;
 
     int rows = map.length;
@@ -951,6 +1003,7 @@ public class Main {
 
     if (gameTimeTimer != null) gameTimeTimer.stop();
     if (floodTimer != null) floodTimer.stop();
+    if (earthquakeTimer != null) earthquakeTimer.stop();
 
     timeLeft = timeLimitSeconds;
 
@@ -962,16 +1015,24 @@ public class Main {
     gameTimeTimer = new Timer(1000, e -> {
         timeLeft--;
 
-        // === FLOOD MULAI SAAT 60 DETIK TERAKHIR ===
-        if (timeLeft == 60 && !isFlooding) {
+        // === LEVEL 1 - FLOOD ===
+        if (timeLeft == 70 && !isFlooding && gameState == 1) {
             isFlooding = true;
             startFlooding();
         }
 
-        if (timeLeft <= 60) {
+        if (timeLeft <= 60 && gameState == 1) {
             warningMessage = true;
             message = "FLOOD INCOMING";
         }
+
+        // === LEVEL 2 - EARTHQUAKE ===
+        if (timeLeft == 60 && gameState == 2) {
+            warningMessage = true;
+            message = "EARTHQUAKE! ROADS ARE COLLAPSING!";
+            startEarthquake();
+        }
+
 
         // === TIME UP ===
         if (timeLeft <= 0) {
@@ -980,6 +1041,7 @@ public class Main {
 
             gameTimeTimer.stop();
             if (floodTimer != null) floodTimer.stop();
+            if (earthquakeTimer != null) earthquakeTimer.stop();
 
             warningMessage = true;
             message = "TIME IS UP!";
@@ -1409,6 +1471,7 @@ public class Main {
 
     if (gameTimeTimer != null) gameTimeTimer.stop();
     if (floodTimer != null) floodTimer.stop();
+    if (earthquakeTimer != null) earthquakeTimer.stop();
     if (countdownTimer != null) countdownTimer.stop();
 
     // reset flood
