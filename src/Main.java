@@ -93,11 +93,11 @@ public class Main {
     static int BASE_CARD_W = 500;
     static int BASE_CARD_H = 640;
     static double scale = frameWidth / 1920.0;
-    static int cardW = (int)(frameWidth * 0.26);   // responsive width
-    static int cardH = (int)(cardW * 1.28);        // keep 500x640 ratio
+    static int cardW = (int)(frameWidth * 0.26);
+    static int cardH = (int)(cardW * 1.28);
     static int centerX = frameWidth / 2;
     static int centerY = frameHeight / 2;
-    // This is for Level Cards
+    //Level Cards
     static int gap = (int)(60 * scale);
     static int level2X = centerX - cardW / 2;
     static int level1X = level2X - cardW - gap;
