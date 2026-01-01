@@ -20,6 +20,9 @@ public class Main {
     static int frameHeight = 768;
     static Font gameFont;
 
+    static int unlockedLevels;
+    static boolean levelUIRefreshed;
+
     // Game Logic Variables
     static int playerX;
     static int playerY;
@@ -37,6 +40,11 @@ public class Main {
     static int timeLeft = timeLimitSeconds;
     static Timer gameTimeTimer;
 
+    static boolean isFlooding = false;
+    static boolean isMapFrozen = false;
+    static int floodStep = 0;
+    static Timer floodTimer;
+
     static int backpack = 0;
     static int[] backpackValue = new int[2];
     static String[] backpackItems = new String[2];
@@ -48,6 +56,7 @@ public class Main {
 
     static boolean isCountingDown = true;
     static boolean level1Inizialized = false;
+    static boolean level2Inizialized = false;
     static int countdownValue = 3;
     static Timer countdownTimer;
 
@@ -120,8 +129,9 @@ public class Main {
 
             Main app = new Main();
 
-            loadCasesFromTXT("assets/data/case/level1-case.txt");
-            totalEvacuation();
+            // loadCasesFromTXT("assets/data/case/level1-case.txt");
+            // totalEvacuation();
+            loadUserData();
             app.loadTileImages();
             app.loadMap();
             app.spawnCharacter();
@@ -138,9 +148,9 @@ public class Main {
                     backButton.setVisible(gameState == 5 || gameState == 10);
                     volumeSlider.setVisible(gameState == 10);
                     retryButton.setVisible(gameState == 6 && results.equals("TIME"));
-                    selectLevelButton.setVisible(gameState == 6 || gameState == 2 || gameState == 3 );
+                    selectLevelButton.setVisible(gameState == 6);
                     nextLevelButton.setVisible(gameState == 6 && results.equals("SUCCESS"));
-                    exitLevelButton.setVisible(gameState == 1);
+                    exitLevelButton.setVisible(gameState == 1 || gameState == 2);
 
                     //#region Game states
                     /* 
@@ -163,6 +173,11 @@ public class Main {
                     } else if (gameState == 4) {
                         app.MainMenu(g, this);
                     } else if (gameState == 5) {
+                        if (!levelUIRefreshed) {
+                            loadUserData();       
+                            refreshLevelUI();   
+                            levelUIRefreshed = true;
+                        }
                         app.LevelScreen(g, this);
                     } else if (gameState == 6) {
                         app.ResultScreen(g, this);
@@ -215,7 +230,7 @@ public class Main {
                 () -> gameState = 5,
                 gamePanel
             );
-
+            
             // LEVEL 1
             level_1 = createImageButton(
                 "assets/images/buttons/level1-button.png",
@@ -226,18 +241,30 @@ public class Main {
 
             // LEVEL 2
             level_2 = createImageButton(
-                "assets/images/buttons/level2-button.png",
+                (unlockedLevels == 2 || unlockedLevels == 3) ? "assets/images/buttons/level2-button.png" : "assets/images/buttons/level2-locked.png",
                 level2X, cardsY,
                 cardW, cardH,
-                () -> gameState = 12,
+                () -> {
+                    if (unlockedLevels == 2 || unlockedLevels == 3) {
+                        gameState = 12;
+                    } else if (unlockedLevels == 1){
+                        gameState = 5;
+                    }
+                },
                 gamePanel
             );
 
             // LEVEL 3
             level_3 = createImageButton(
-                "assets/images/buttons/level3-button.png",
+                (unlockedLevels == 3) ? "assets/images/buttons/level3-button.png" : "assets/images/buttons/level3-locked.png",
                 level3X, cardsY, cardW, cardH,
-                () -> gameState = 13,
+                () -> {
+                    if (unlockedLevels == 3) {
+                        gameState = 12;
+                    } else {
+                        gameState = 5;
+                    }
+                },
                 gamePanel
             );
 
@@ -269,6 +296,7 @@ public class Main {
                     app.resetGame();
                     gameState = 5;
                     level1Inizialized = false;
+                    levelUIRefreshed = false;
                 },
                 gamePanel
             );
@@ -368,6 +396,10 @@ public class Main {
                         }
                         showMessage = false;
                     }
+                    // exit windows game
+                    if (key == KeyEvent.VK_ESCAPE){
+                        System.exit(0);
+                    }
                 }
                 public void keyReleased(KeyEvent e) {
                     int k = e.getKeyCode();
@@ -440,7 +472,7 @@ public class Main {
     public void level1_loading(Graphics g, Component c) {
         ImageIcon LoadingL1 = new ImageIcon("assets/images/background/Loading L1.gif");
         g.drawImage(LoadingL1.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
-
+        
         if(!levelLoadingTimerStarted) {
             levelLoadingTimerStarted = true;
             System.out.println("Loading Level 1...");
@@ -533,6 +565,24 @@ public class Main {
             g2.drawString(text, x, y);
         }
 
+        if (results.equals("FLOODED")) {
+            ImageIcon floodedBackground = new ImageIcon("assets/images/background/main-background.jpg");
+            g2.drawImage(floodedBackground.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
+
+            g2.setColor(new Color(0, 0, 0, 180));
+            g2.fillRect(0, 0, c.getWidth(), c.getHeight());
+
+            g2.setColor(Color.RED);
+            g2.setFont(new Font("Arial", Font.BOLD, 80));
+
+            String text = "GAME OVER! YOU FLOODED";
+            FontMetrics fm = g2.getFontMetrics();
+            int x = (c.getWidth() - fm.stringWidth(text)) / 2;
+            int y = 300;
+
+            g2.drawString(text, x, y);
+        }
+
         
     }
 
@@ -541,6 +591,37 @@ public class Main {
     
         if (!level1Inizialized) {
             level1Inizialized = true;
+            loadCasesFromTXT("assets/data/case/level1-case.txt");
+            totalEvacuation();
+            loadMap();
+            startCountdown();
+        }
+
+        if (isCountingDown) {
+            CountingDownScreen(g, c);
+            return;
+        }
+
+        drawTileMap(g, c);
+        drawCharacter(g, playerX, playerY, direction, spriteNum);
+        drawEmergencies(g, c);
+        drawGameStatus(g, c);
+
+        if (showMessage && !warningMessage) {
+            showMessage(g, c, message);
+        }
+        if (warningMessage) {
+            drawWarningMessage(g, c, message);
+        }
+    }
+
+    // level 2 screen
+    public void Level2_Screen(Graphics g, Component c) {
+        if (!level2Inizialized) {
+            level2Inizialized = true;
+            loadCasesFromTXT("assets/data/case/level2-case.txt");
+            totalEvacuation();
+            loadMap();
             startCountdown();
         }
 
@@ -559,26 +640,6 @@ public class Main {
         if (warningMessage) {
             drawWarningMessage(g, c, message);
         }
-    }
-
-    // level 2 screen
-    public void Level2_Screen(Graphics g, Component c) {
-        Graphics2D g2 = (Graphics2D) g;
-        ImageIcon successBackground = new ImageIcon("assets/images/background/main-background.jpg");
-        g2.drawImage(successBackground.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
-
-        g2.setColor(new Color(0, 0, 0, 180));
-        g2.fillRect(0, 0, c.getWidth(), c.getHeight());
-
-        g2.setColor(Color.YELLOW);
-        g2.setFont(new Font("Arial", Font.BOLD, 100));
-
-        String text = "COMING SOON";
-        FontMetrics fm = g2.getFontMetrics();
-        int x = (c.getWidth() - fm.stringWidth(text)) / 2;
-        int y = 400;
-
-        g2.drawString(text, x, y);
     }
 
     public void Level3_Screen(Graphics g, Component c) {
@@ -785,6 +846,67 @@ public class Main {
         }
     }
 
+    static void startFlooding() {
+
+    if (floodTimer != null) floodTimer.stop();
+
+    floodStep = 0;
+    isFlooding = true;
+
+    // flood setiap 10 detik (simple & stabil)
+    floodTimer = new Timer(10000, e -> {
+        floodMap();
+        floodStep++;
+    });
+
+    floodTimer.start();
+}
+
+    static void floodMap() {
+
+    // REM DARURAT (INI YANG BIKIN TIDAK BOCOR)
+    if (isMapFrozen) return;
+
+    int rows = map.length;
+    int cols = map[0].length;
+
+    int playerRow = playerY / tileSize;
+    int playerCol = playerX / tileSize;
+
+    int s = floodStep;
+
+    for (int r = 0; r < rows; r++) {
+        for (int c = 0; c < cols; c++) {
+
+            boolean isOuter =
+                r == s ||
+                c == s ||
+                r == rows - 1 - s ||
+                c == cols - 1 - s;
+
+            if (isOuter && map[r][c] != '2') {
+                map[r][c] = '2'; // jadi air
+
+                // === PLAYER KENA BANJIR ===
+                if (r == playerRow && c == playerCol) {
+
+                    isMapFrozen = true;
+
+                    if (gameTimeTimer != null) gameTimeTimer.stop();
+                    if (floodTimer != null) floodTimer.stop();
+
+                    warningMessage = true;
+                    message = "YOU ARE FLOODED!";
+                    gameState = 6;
+                    results = "FLOODED";
+                    return;
+                }
+            }
+        }
+    }
+}
+
+
     //#endregion
 
     //#region MUSIC FUNCTIONS
@@ -806,6 +928,13 @@ public class Main {
             e.printStackTrace();
         }
     }
+
+    static void stopBGM() {
+        if (menuBGM != null && menuBGM.isRunning()) {
+            menuBGM.stop();
+            menuBGM.close();
+        }
+    }
     //#endregion
 
     //#region TIMER FUNCTIONS
@@ -819,27 +948,48 @@ public class Main {
 
     // gamer timer function
     static void startGameTimer() {
-        if (gameTimeTimer != null) {
-            gameTimeTimer.stop();
+
+    if (gameTimeTimer != null) gameTimeTimer.stop();
+    if (floodTimer != null) floodTimer.stop();
+
+    timeLeft = timeLimitSeconds;
+
+    // reset flood state
+    isFlooding = false;
+    isMapFrozen = false;
+    floodStep = 0;
+
+    gameTimeTimer = new Timer(1000, e -> {
+        timeLeft--;
+
+        // === FLOOD MULAI SAAT 60 DETIK TERAKHIR ===
+        if (timeLeft == 60 && !isFlooding) {
+            isFlooding = true;
+            startFlooding();
         }
 
-        timeLeft = timeLimitSeconds;
+        if (timeLeft <= 60) {
+            warningMessage = true;
+            message = "FLOOD INCOMING";
+        }
 
-        gameTimeTimer = new Timer(1000, e -> {
-            timeLeft--;
+        // === TIME UP ===
+        if (timeLeft <= 0) {
+            timeLeft = 0;
+            isMapFrozen = true;
 
-            if (timeLeft <= 0) {
-                timeLeft = 0;
-                gameTimeTimer.stop();
-                warningMessage = true;
-                message = "TIME IS UP!";
-                gameState = 6;
-                results = "TIME";
-            }
-        });
+            gameTimeTimer.stop();
+            if (floodTimer != null) floodTimer.stop();
 
-        gameTimeTimer.start();
-    }
+            warningMessage = true;
+            message = "TIME IS UP!";
+            gameState = 6;
+            results = "TIME";
+        }
+    });
+
+    gameTimeTimer.start();
+}
 
     // delayed timer function
     public static void timerDelayed(int delayMs, Runnable action) {
@@ -855,6 +1005,7 @@ public class Main {
     public static void startCountdown() {
         countdownValue = 3;
         isCountingDown = true;
+        stopBGM();
 
         if (countdownTimer != null) {
             countdownTimer.stop();
@@ -867,6 +1018,7 @@ public class Main {
                 countdownTimer.stop();
                 isCountingDown = false;
                 startGameTimer(); 
+                playBGM("assets/sounds/BGMmenu.wav");
             }
         });
 
@@ -913,6 +1065,8 @@ public class Main {
         int textY = boxY;
 
         g2.drawString(message, textX, textY);
+        g2.drawString("1. Take or Save", textX, textY + 50);
+        g2.drawString("2. Close", textX, textY + 75);
     }
 
     // warning message function
@@ -1050,6 +1204,10 @@ public class Main {
             if (gameTimeTimer != null) gameTimeTimer.stop(); // Stop Timer
             warningMessage = true;
             message = "ALL EMERGENCIES EVACUATED! WELL DONE!";
+            if (unlockedLevels == 1) {
+                unlockedLevels += 1;
+                saveUserData();
+            }
             gameState = 6;
             results = "SUCCESS";
         }
@@ -1058,6 +1216,33 @@ public class Main {
         showMessage = false;
     }
     // endregion
+
+    //#region USER DATA FUNCTIONS
+
+    static void loadUserData() {
+        try {
+            java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.FileReader("assets/data/user/user-data.txt"));
+            String line = reader.readLine();
+            if (line != null && line.startsWith("unlocked_levels=")) {
+                unlockedLevels = Integer.parseInt(line.substring(16));
+            }
+            reader.close();
+        } catch (Exception e) {
+            unlockedLevels = 1; // default
+        }
+    }
+
+    static void saveUserData() {
+        try {
+            java.io.PrintWriter writer = new java.io.PrintWriter("assets/data/user/user-data.txt");
+            writer.println("unlocked_levels=" + unlockedLevels);
+            writer.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    ////#endregion
 
     //#region UTILITY FUNCTIONS
 
@@ -1194,18 +1379,63 @@ public class Main {
         }
     }
 
-    public void resetGame() {
-        backpack = 0;
-        for (int i = 0; i < backpackValue.length; i++) {
-            backpackValue[i] = 0;
-            backpackItems[i] = null;
-        }
-        evacuated = 0;
-        loadMap();
-        spawnCharacter();
-        warningMessage = false;
-        message = "";
+    static void refreshLevelUI() {
+
+    // LEVEL 2
+    if (unlockedLevels >= 2) {
+        level_2.setIcon(new ImageIcon(
+            "assets/images/buttons/level2-button.png"
+        ));
+    } else {
+        level_2.setIcon(new ImageIcon(
+            "assets/images/buttons/level2-locked.png"
+        ));
     }
+
+    // LEVEL 3
+    if (unlockedLevels >= 3) {
+        level_3.setIcon(new ImageIcon(
+            "assets/images/buttons/level3-button.png"
+        ));
+    } else {
+        level_3.setIcon(new ImageIcon(
+            "assets/images/buttons/level3-locked.png"
+        ));
+    }
+}
+
+
+    public void resetGame() {
+
+    if (gameTimeTimer != null) gameTimeTimer.stop();
+    if (floodTimer != null) floodTimer.stop();
+    if (countdownTimer != null) countdownTimer.stop();
+
+    // reset flood
+    isFlooding = false;
+    isMapFrozen = false;
+    floodStep = 0;
+
+    // reset gameplay
+    timeLeft = timeLimitSeconds;
+    backpack = 0;
+    evacuated = 0;
+    currentEmergencyIndex = -1;
+
+    for (int i = 0; i < backpackValue.length; i++) {
+        backpackValue[i] = 0;
+        backpackItems[i] = null;
+    }
+
+    warningMessage = false;
+    showMessage = false;
+    message = "";
+    results = "";
+
+    // IMPORTANT: reload map
+    loadMap();
+    spawnCharacter();
+}
 
     //#endregion
 

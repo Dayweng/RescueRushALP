@@ -1,0 +1,108 @@
+LEVEL=2
+TIME_LIMIT_SECONDS=210
+BACKPACK_CAPACITY=2
+EVACUATION_CAPACITY=1
+
+---
+
+ID=L2_G_01
+TYPE=GREEN
+TITLE=First Aid Kit
+DESCRIPTION=A first aid kit is found inside a damaged convenience store.
+ITEM_REWARD=FIRST AID
+REQUIRED_ITEM=none
+RESOLVE_TIME_SEC=5
+
+---
+
+ID=L2_R_01
+TYPE=RED
+TITLE=Injured Civilian
+DESCRIPTION=A civilian is injured by falling debris and cannot walk.
+ITEM_REWARD=none
+REQUIRED_ITEM=FIRST AID
+EVAC_TYPE=person
+RESOLVE_TIME_SEC=20
+
+---
+
+ID=L2_G_02
+TYPE=GREEN
+TITLE=Protective Helmet
+DESCRIPTION=A safety helmet is found near a collapsed construction site.
+ITEM_REWARD=HELMET
+REQUIRED_ITEM=none
+RESOLVE_TIME_SEC=5
+
+---
+
+ID=L2_R_02
+TYPE=RED
+TITLE=Trapped Construction Worker
+DESCRIPTION=A worker is trapped under light rubble and needs head protection to escape.
+ITEM_REWARD=none
+REQUIRED_ITEM=HELMET
+EVAC_TYPE=person
+RESOLVE_TIME_SEC=20
+
+---
+
+ID=L2_G_03
+TYPE=GREEN
+TITLE=Emergency Water
+DESCRIPTION=Bottled water supplies are found inside an abandoned car.
+ITEM_REWARD=WATER
+REQUIRED_ITEM=none
+RESOLVE_TIME_SEC=5
+
+---
+
+ID=L2_G_04
+TYPE=GREEN
+TITLE=Emergency Whistle
+DESCRIPTION=A whistle is found and can be used to signal trapped victims.
+ITEM_REWARD=WHISTLE
+REQUIRED_ITEM=none
+RESOLVE_TIME_SEC=5
+
+---
+
+ID=L2_R_03
+TYPE=RED
+TITLE=Victim Under Rubble
+DESCRIPTION=A victim is trapped under debris and can only be located by sound.
+ITEM_REWARD=none
+REQUIRED_ITEM=WHISTLE
+EVAC_TYPE=person
+RESOLVE_TIME_SEC=20
+
+---
+
+ID=L2_R_04
+TYPE=RED
+TITLE=Panicked Child
+DESCRIPTION=A child is panicking after the earthquake and refuses to move without water.
+ITEM_REWARD=none
+REQUIRED_ITEM=WATER
+EVAC_TYPE=person
+RESOLVE_TIME_SEC=15
+
+---
+
+ID=L2_Y_01
+TYPE=YELLOW
+TITLE=Aftershock Risk
+DESCRIPTION=Strong aftershocks may occur in this area.
+QUESTION=Proceed anyway?
+CHOICES=YES,IGNORE
+RESOLVE_TIME_SEC=10
+
+---
+
+ID=L2_Y_02
+TYPE=YELLOW
+TITLE=Unstable Building
+DESCRIPTION=A damaged building may collapse at any moment.
+QUESTION=Enter the building?
+CHOICES=YES,IGNORE
+RESOLVE_TIME_SEC=10
