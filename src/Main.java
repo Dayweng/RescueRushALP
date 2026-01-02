@@ -34,6 +34,8 @@ public class Main {
 
     static String message = "";
     static boolean showMessage = false;
+    static boolean actionMessage = false;
+    static String messageForWarning = "";
     static boolean warningMessage = false;
 
     static int timeLimitSeconds = 71;
@@ -49,7 +51,7 @@ public class Main {
     static int backpack = 0;
     static int[] backpackValue = new int[2];
     static String[] backpackItems = new String[2];
-    static int evacuated = 0;
+    static int evacuated = 6;
     static int totalEvacuated;
 
     static ArrayList<String[]> Emergency = new ArrayList<>();
@@ -58,6 +60,7 @@ public class Main {
     static boolean isCountingDown = true;
     static boolean level1Inizialized = false;
     static boolean level2Inizialized = false;
+    static boolean level3Inizialized = false;
     static int countdownValue = 3;
     static Timer countdownTimer;
 
@@ -112,9 +115,9 @@ public class Main {
 
 
     // Music Variables
-    static Clip menuBGM;
+    static boolean isActionSoundPlayed = false;
+    static Clip menuBGM, actionSound;
     static FloatControl volumeControl;    
-
 
     //#region MAIN SYSTEM
     public static void main(String[] args) {
@@ -262,7 +265,7 @@ public class Main {
                 level3X, cardsY, cardW, cardH,
                 () -> {
                     if (unlockedLevels == 3) {
-                        gameState = 12;
+                        gameState = 13;
                     } else {
                         gameState = 5;
                     }
@@ -287,6 +290,7 @@ public class Main {
                     gameState = 1;
                     level1Inizialized = false;
                     level2Inizialized = false;
+                    level3Inizialized = false;
                 },
                 gamePanel
             );
@@ -300,6 +304,7 @@ public class Main {
                     gameState = 5;
                     level1Inizialized = false;
                     level2Inizialized = false;
+                    level3Inizialized = false;
                     levelUIRefreshed = false;
                 },
                 gamePanel
@@ -324,6 +329,7 @@ public class Main {
                     gameState = 5;
                     level1Inizialized = false;
                     level2Inizialized = false;
+                    level3Inizialized = false;
                 },
                 gamePanel
             );
@@ -374,8 +380,8 @@ public class Main {
                         }
                     }
                     if (key == KeyEvent.VK_ENTER) {
-                        if(warningMessage) {
-                            warningMessage = false;
+                        if(actionMessage) {
+                            actionMessage = false;
                             message = "";
                         }
                         if(showMessage) {
@@ -541,6 +547,13 @@ public class Main {
         Graphics2D g2 = (Graphics2D) g;
 
         if (results.equals("TIME")) {
+
+            if (!isActionSoundPlayed){
+                stopBGM();
+                actionSound("assets/sounds/gameover.wav");
+                isActionSoundPlayed = true;
+            }
+
             ImageIcon timesUpBackground = new ImageIcon("assets/images/background/main-background.jpg");
             g2.drawImage(timesUpBackground.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
 
@@ -559,6 +572,13 @@ public class Main {
         }
 
         if (results.equals("SUCCESS")) {
+
+            if (!isActionSoundPlayed){
+                stopBGM();
+                actionSound("assets/sounds/levelup.wav");
+                isActionSoundPlayed = true;
+            }
+
             ImageIcon successBackground = new ImageIcon("assets/images/background/main-background.jpg");
             g2.drawImage(successBackground.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
 
@@ -577,6 +597,13 @@ public class Main {
         }
 
         if (results.equals("FLOODED")) {
+
+            if (!isActionSoundPlayed){
+                stopBGM();
+                actionSound("assets/sounds/gameover.wav");
+                isActionSoundPlayed = true;
+            }
+
             ImageIcon floodedBackground = new ImageIcon("assets/images/background/main-background.jpg");
             g2.drawImage(floodedBackground.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
 
@@ -618,8 +645,11 @@ public class Main {
         drawEmergencies(g, c);
         drawGameStatus(g, c);
 
-        if (showMessage && !warningMessage) {
+        if (showMessage && !actionMessage) {
             showMessage(g, c, message);
+        }
+        if (actionMessage) {
+            drawActionMessage(g, c, message);
         }
         if (warningMessage) {
             drawWarningMessage(g, c, message);
@@ -645,8 +675,12 @@ public class Main {
         drawCharacter(g, playerX, playerY, direction, spriteNum);
         drawEmergencies(g, c);
         drawGameStatus(g, c);
-        if (showMessage && !warningMessage) {
+
+        if (showMessage && !actionMessage) {
             showMessage(g, c, message);
+        }
+        if (actionMessage) {
+            drawActionMessage(g, c, message);
         }
         if (warningMessage) {
             drawWarningMessage(g, c, message);
@@ -654,22 +688,34 @@ public class Main {
     }
 
     public void Level3_Screen(Graphics g, Component c) {
-        Graphics2D g2 = (Graphics2D) g;
-        ImageIcon successBackground = new ImageIcon("assets/images/background/main-background.jpg");
-        g2.drawImage(successBackground.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
 
-        g2.setColor(new Color(0, 0, 0, 180));
-        g2.fillRect(0, 0, c.getWidth(), c.getHeight());
+        if (!level3Inizialized) {
+            level3Inizialized = true;
+            loadCasesFromTXT("assets/data/case/level3-case.txt");
+            totalEvacuation();
+            loadMap();
+            startCountdown();
+        }
 
-        g2.setColor(Color.YELLOW);
-        g2.setFont(new Font("Arial", Font.BOLD, 100));
+        if (isCountingDown) {
+            CountingDownScreen(g, c);
+            return;
+        }
 
-        String text = "COMING SOON";
-        FontMetrics fm = g2.getFontMetrics();
-        int x = (c.getWidth() - fm.stringWidth(text)) / 2;
-        int y = 400;
+        drawTileMap(g, c);
+        drawCharacter(g, playerX, playerY, direction, spriteNum);
+        drawEmergencies(g, c);
+        drawGameStatus(g, c);
 
-        g2.drawString(text, x, y);
+        if (showMessage && !actionMessage) {
+            showMessage(g, c, message);
+        }
+        if (actionMessage) {
+            drawActionMessage(g, c, message);
+        }
+        if (warningMessage) {
+            drawWarningMessage(g, c, message);
+        }
     }
 
     //#endregion
@@ -708,6 +754,7 @@ public class Main {
             warningRed = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-red.png"));
             earthquakeBlock = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/crate.png"));
             house1 = javax.imageio.ImageIO.read(new java.io.File("assets/images/house/house1.png"));
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -841,26 +888,26 @@ public class Main {
     void drawEmergencies(Graphics g, Component c) {
         for (int i = 0; i < warningPoints.length; i++) {
 
-            if(warningPoints[i][3] == 1) continue;
-            
+            if (warningPoints[i][3] == 1) continue;
+
             int x = warningPoints[i][0];
             int y = warningPoints[i][1];
 
             String[] data = Emergency.get(warningPoints[i][2]);
-            String type = data[0];
+            String imagePath = data[5];
 
-            BufferedImage img = null;
-            if (type.equals("GREEN")) {
-                img = warningGreen;
-            } else if (type.equals("YELLOW")) {
-                img = warningYellow;
-            } else if (type.equals("RED")) {
-                img = warningRed;
+            try {
+                BufferedImage img =
+                    javax.imageio.ImageIO.read(new File(imagePath));
+
+                g.drawImage(img, x, y, tileSize, tileSize, c);
+
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-
-            g.drawImage(img, x, y, tileSize, tileSize, c);
         }
     }
+
 
     static void startFlooding() {
 
@@ -947,7 +994,8 @@ public class Main {
                     if (gameTimeTimer != null) gameTimeTimer.stop();
                     if (floodTimer != null) floodTimer.stop();
 
-                    warningMessage = true;
+                    isActionSoundPlayed = false;
+                    actionMessage = true;
                     message = "YOU ARE FLOODED!";
                     gameState = 6;
                     results = "FLOODED";
@@ -975,6 +1023,31 @@ public class Main {
 
             menuBGM.loop(Clip.LOOP_CONTINUOUSLY);
             menuBGM.start();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void actionSound(String path) {
+        try {
+
+            if (actionSound != null && actionSound.isRunning()) {
+                actionSound.stop();
+                actionSound.close();
+            }
+
+            AudioInputStream audioStream =
+            AudioSystem.getAudioInputStream(new File(path));
+
+            actionSound = AudioSystem.getClip();
+            actionSound.open(audioStream);
+
+            FloatControl gain = (FloatControl) actionSound.getControl(FloatControl.Type.MASTER_GAIN);
+
+            gain.setValue(+6.0f);
+
+            actionSound.start();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -1023,13 +1096,13 @@ public class Main {
 
         if (timeLeft <= 60 && gameState == 1) {
             warningMessage = true;
-            message = "FLOOD INCOMING";
+            messageForWarning = "FLOOD INCOMING";
         }
 
         // === LEVEL 2 - EARTHQUAKE ===
         if (timeLeft == 60 && gameState == 2) {
             warningMessage = true;
-            message = "EARTHQUAKE! ROADS ARE COLLAPSING!";
+            messageForWarning = "EARTHQUAKE! ROADS ARE COLLAPSING!";
             startEarthquake();
         }
 
@@ -1043,7 +1116,8 @@ public class Main {
             if (floodTimer != null) floodTimer.stop();
             if (earthquakeTimer != null) earthquakeTimer.stop();
 
-            warningMessage = true;
+            isActionSoundPlayed = false;
+            actionMessage = true;
             message = "TIME IS UP!";
             gameState = 6;
             results = "TIME";
@@ -1131,15 +1205,26 @@ public class Main {
         g2.drawString("2. Close", textX, textY + 75);
     }
 
-    // warning message function
+    // action message function
+    public void drawActionMessage(Graphics g, Component c, String message) {
+        Graphics2D g2 = (Graphics2D) g;
+
+        g2.setFont(getGameFont(32f));
+        g2.setColor(Color.RED);
+
+        g2.drawString(message, 20, 100);
+    }
+
+    // warning meesage function
     public void drawWarningMessage(Graphics g, Component c, String message) {
         Graphics2D g2 = (Graphics2D) g;
 
         g2.setFont(getGameFont(32f));
         g2.setColor(Color.RED);
 
-        g2.drawString(message, 20, 80);
+        g2.drawString(messageForWarning, 20, 70);
     }
+
 
     // timer and backpack status game function
     public void drawGameStatus(Graphics g, Component c) {
@@ -1203,10 +1288,10 @@ public class Main {
                 backpackItems[backpack - 1] = itemRewards;
                 warningPoints[currentEmergencyIndex][3] = 1;
                 message = "YOU GOT " + itemRewards + "!";
-                warningMessage = true;
+                actionMessage = true;
             } else {
                 message = "BACKPACK IS FULL! PLEASE DELIVER THE ITEMS FIRST.";
-                warningMessage = true;
+                actionMessage = true;
             }
         }
 
@@ -1214,7 +1299,7 @@ public class Main {
             warningPoints[currentEmergencyIndex][3] = 1;
             evacuated += 1;
             message = "EMERGENCY EVACUATED!";
-            warningMessage = true;
+            actionMessage = true;
         }
         
         if (type.equals("RED")) {
@@ -1250,7 +1335,7 @@ public class Main {
                 success = true;
             } else {
                 message = "REQUIRED " + requiredItem + " NOT FOUND!";
-                warningMessage = true;
+                actionMessage = true;
             }
         }
 
@@ -1258,13 +1343,13 @@ public class Main {
             warningPoints[currentEmergencyIndex][3] = 1;
             evacuated += 1;
             message = "EMERGENCY EVACUATED!";
-            warningMessage = true;
+            actionMessage = true;
             }
         }
 
         if (evacuated >= totalEvacuated) {
             if (gameTimeTimer != null) gameTimeTimer.stop(); // Stop Timer
-            warningMessage = true;
+            actionMessage = true;
             message = "ALL EMERGENCIES EVACUATED! WELL DONE!";
             if (unlockedLevels == 1) {
                 unlockedLevels += 1;
@@ -1329,7 +1414,7 @@ public class Main {
                     if (current != null) {
                         Emergency.add(current);
                     }
-                    current = new String[5];
+                    current = new String[6];
                     continue;
                 }
 
@@ -1349,6 +1434,9 @@ public class Main {
                 }
                 else if (line.startsWith("REQUIRED_ITEM=")) {
                     current[4] = line.substring(14);
+                }
+                else if (line.startsWith("PATH_IMAGES=")) {
+                    current[5] = line.substring(12);
                 }
             }
 
@@ -1469,6 +1557,7 @@ public class Main {
 
     public void resetGame() {
 
+    if (menuBGM != null) stopBGM();
     if (gameTimeTimer != null) gameTimeTimer.stop();
     if (floodTimer != null) floodTimer.stop();
     if (earthquakeTimer != null) earthquakeTimer.stop();
@@ -1490,14 +1579,17 @@ public class Main {
         backpackItems[i] = null;
     }
 
+    actionMessage = false;
     warningMessage = false;
     showMessage = false;
+    messageForWarning = "";
     message = "";
     results = "";
 
     // IMPORTANT: reload map
     loadMap();
     spawnCharacter();
+    playBGM("assets/sounds/BGMmenu.wav");
 }
 
     //#endregion
