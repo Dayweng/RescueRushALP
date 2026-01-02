@@ -130,7 +130,9 @@ public class Main {
         SwingUtilities.invokeLater(()-> {
             JFrame mainFrame = new JFrame();
             
+            //#region window config
             mainFrame.setSize(frameWidth, frameHeight);
+            //mainFrame.setExtendedState(mainFrame.getExtendedState() | JFrame.MAXIMIZED_BOTH);
             mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             mainFrame.setResizable(false);
             mainFrame.setVisible(true);
@@ -219,7 +221,7 @@ public class Main {
             //#region UI COMPONENTS INITIALIZATION
 
             // Volume Slider
-            volumeSlider = new JSlider(50, 100, 70);
+            volumeSlider = new JSlider(50, 100, 90);
             volumeSlider.setBounds(centerX-150, centerY, 300, 40);
             volumeSlider.setOpaque(false); // defolt bg transparent
             gamePanel.add(volumeSlider);
@@ -227,15 +229,15 @@ public class Main {
             // setting button
             settingsButton = createImageButton(
                 "assets/images/buttons/setting-button.png",
-                centerX(400), 500, 400, 80,
+                centerX(365), 500, 365, 79,
                 () -> gameState = 10,
                 gamePanel
             );
 
             // start button
             startButton = createImageButton(
-                "assets/images/buttons/start-button.png",
-                centerX(400), 400, 400, 80,
+                "assets/images/buttons/start-button.gif",
+                centerX(365), 400, 365, 79,
                 () -> gameState = 5,
                 gamePanel
             );
@@ -280,15 +282,15 @@ public class Main {
             // back button
             backButton = createImageButton(
                 "assets/images/buttons/back-button.png",
-                backX, (frameHeight/2)+250, backW, backH,
+                centerX(365), (frameHeight/2)+230, 365, 79,
                 () -> gameState = 4,
                 gamePanel
             );
 
             // retry button
             retryButton = createImageButton(
-                "assets/images/buttons/back-button.png",
-                centerX(400), 400, 400, 80,
+                "assets/images/buttons/retry button.png",
+                centerX(365), 400, 365, 79,
                 () -> {
                     app.resetGame();
                     level1Inizialized = false;
@@ -307,8 +309,8 @@ public class Main {
 
             // select level button
             selectLevelButton = createImageButton(
-                "assets/images/buttons/back-button.png",
-                centerX(400), 500, 400, 80,
+                "assets/images/buttons/selectLvl button.png",
+                centerX(365), 500, 365, 79,
                 () -> {
                     app.resetGame();
                     gameState = 5;
@@ -322,8 +324,8 @@ public class Main {
 
             // next level button
             nextLevelButton = createImageButton(
-                "assets/images/buttons/back-button.png",
-                centerX(400), 400, 400, 80,
+                "assets/images/buttons/nextLvl button.gif",
+                centerX(365), 400, 365, 79,
                 () -> {
                     app.resetGame();
                     if (lastLevel == 1) gameState = 12;
@@ -334,7 +336,7 @@ public class Main {
 
             // exit level button
             exitLevelButton = createImageButton(
-                "assets/images/buttons/back-button.png",
+                "assets/images/buttons/exitLvl button.png",
                 1260, 10, 100, 40,
                 () -> {
                     app.resetGame();
@@ -347,8 +349,8 @@ public class Main {
             );
 
             resetUserDataButton = createImageButton(
-                "assets/images/buttons/back-button.png",
-                centerX(400), 500, 400, 80,
+                "assets/images/buttons/ResetUData button.png",
+                centerX(365), 500, 365, 79,
                 () -> {
                     resetUserData();
                 },
@@ -497,7 +499,7 @@ public class Main {
 
     // Setting screen
     public void Setting(Graphics g, Component c) {
-        ImageIcon LevelScreenBG = new ImageIcon("assets/images/background/main-background.jpg");
+        ImageIcon LevelScreenBG = new ImageIcon("assets/images/background/Settingsbg.png");
         g.drawImage(LevelScreenBG.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
     }
 
@@ -1714,7 +1716,6 @@ public class Main {
 
             spawnCharacter();
 
-            // 🔥 INI YANG WAJIB
             level1Inizialized = false;
             level2Inizialized = false;
             level3Inizialized = false;
