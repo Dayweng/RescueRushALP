@@ -93,6 +93,7 @@ public class Main {
     static JButton nextLevelButton;
     static JButton exitLevelButton;
     static JSlider volumeSlider;
+    static JButton resetUserDataButton;
 
     static BufferedImage up1, up2, down1, down2, left1, left2, right1, right2;
     static BufferedImage grass, water0, waterup, waterdown, waterleft, waterright, waterupright, waterupleft, waterdownright, waterdownleft, road;
@@ -153,6 +154,7 @@ public class Main {
                     level_3.setVisible(gameState == 5);
                     backButton.setVisible(gameState == 5 || gameState == 10);
                     volumeSlider.setVisible(gameState == 10);
+                    resetUserDataButton.setVisible(gameState == 10);
                     retryButton.setVisible(gameState == 6 && (results.equals("TIME") || results.equals("FLOODED") || results.equals("LANDSLIDE")));
                     selectLevelButton.setVisible(gameState == 6);
                     nextLevelButton.setVisible(gameState == 6 && results.equals("SUCCESS"));
@@ -343,6 +345,16 @@ public class Main {
                 },
                 gamePanel
             );
+
+            resetUserDataButton = createImageButton(
+                "assets/images/buttons/back-button.png",
+                centerX(400), 500, 400, 80,
+                () -> {
+                    resetUserData();
+                },
+                gamePanel
+            );
+
             //#endregion
 
             //#region KEY LISTENERS
@@ -1476,7 +1488,7 @@ public class Main {
             }
             reader.close();
         } catch (Exception e) {
-            unlockedLevels = 1; // default
+            unlockedLevels = 1; 
         }
     }
 
@@ -1484,6 +1496,16 @@ public class Main {
         try {
             java.io.PrintWriter writer = new java.io.PrintWriter("assets/data/user/user-data.txt");
             writer.println("unlocked_levels=" + unlockedLevels);
+            writer.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    static void resetUserData() {
+        try {
+            java.io.PrintWriter writer = new java.io.PrintWriter("assets/data/user/user-data.txt");
+            writer.println("unlocked_levels=1");
             writer.close();
         } catch (Exception e) {
             e.printStackTrace();
