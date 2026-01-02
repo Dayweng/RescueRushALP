@@ -38,20 +38,25 @@ public class Main {
     static String messageForWarning = "";
     static boolean warningMessage = false;
 
-    static int timeLimitSeconds = 71;
+    static int timeLimitSeconds = 300;
     static int timeLeft = timeLimitSeconds;
     static Timer gameTimeTimer;
 
     static boolean isFlooding = false;
+    static boolean isLandslides = false;
     static boolean isMapFrozen = false;
     static int floodStep = 0;
+    static int landslidesStep = 0;
     static Timer floodTimer;
     static Timer earthquakeTimer;
+    static Timer landslidesTimer;
+    
+    static int lastLevel;
 
     static int backpack = 0;
     static int[] backpackValue = new int[2];
     static String[] backpackItems = new String[2];
-    static int evacuated = 6;
+    static int evacuated = 0;
     static int totalEvacuated;
 
     static ArrayList<String[]> Emergency = new ArrayList<>();
@@ -113,7 +118,6 @@ public class Main {
     static int backH = (int)(70 * scale);
     static int backX = frameWidth / 2 - backW / 2;
 
-
     // Music Variables
     static boolean isActionSoundPlayed = false;
     static Clip menuBGM, actionSound;
@@ -121,7 +125,6 @@ public class Main {
 
     //#region MAIN SYSTEM
     public static void main(String[] args) {
-        // Game Properties
         System.out.println("Game Started Window Size: " + frameWidth + "x" + frameHeight);
         SwingUtilities.invokeLater(()-> {
             JFrame mainFrame = new JFrame();
@@ -134,8 +137,6 @@ public class Main {
 
             Main app = new Main();
 
-            // loadCasesFromTXT("assets/data/case/level1-case.txt");
-            // totalEvacuation();
             loadUserData();
             app.loadTileImages();
             app.loadMap();
@@ -152,10 +153,10 @@ public class Main {
                     level_3.setVisible(gameState == 5);
                     backButton.setVisible(gameState == 5 || gameState == 10);
                     volumeSlider.setVisible(gameState == 10);
-                    retryButton.setVisible(gameState == 6 && (results.equals("TIME") || results.equals("FLOODED")));
+                    retryButton.setVisible(gameState == 6 && (results.equals("TIME") || results.equals("FLOODED") || results.equals("LANDSLIDE")));
                     selectLevelButton.setVisible(gameState == 6);
                     nextLevelButton.setVisible(gameState == 6 && results.equals("SUCCESS"));
-                    exitLevelButton.setVisible(gameState == 1 || gameState == 2);
+                    exitLevelButton.setVisible(gameState == 1 || gameState == 2 || gameState == 3);
 
                     //#region Game states
                     /* 
@@ -173,6 +174,7 @@ public class Main {
                     GAME STATE 12: Loading Level 2
                     GAME STATE 13: Loading Level 3
                      */
+
                     if (gameState == 0) { 
                         app.OnBoarding(g, this);
                     } else if (gameState == 4) {
@@ -287,10 +289,16 @@ public class Main {
                 centerX(400), 400, 400, 80,
                 () -> {
                     app.resetGame();
-                    gameState = 1;
                     level1Inizialized = false;
                     level2Inizialized = false;
                     level3Inizialized = false;
+                    if (lastLevel == 1){
+                        gameState = 11;
+                    } else if (lastLevel == 2) {
+                        gameState = 12;
+                    } else if (lastLevel == 3) {
+                        gameState = 13;
+                    };
                 },
                 gamePanel
             );
@@ -315,7 +323,9 @@ public class Main {
                 "assets/images/buttons/back-button.png",
                 centerX(400), 400, 400, 80,
                 () -> {
-                    gameState = 2;
+                    app.resetGame();
+                    if (lastLevel == 1) gameState = 12;
+                    else if (lastLevel == 2) gameState = 13;
                 },
                 gamePanel
             );
@@ -424,8 +434,8 @@ public class Main {
 
             volumeSlider.addChangeListener(e -> {
                 if (volumeControl != null) {
-                    float min = volumeControl.getMinimum(); // usually -80
-                    float max = volumeControl.getMaximum(); // usually 0
+                    float min = volumeControl.getMinimum(); 
+                    float max = volumeControl.getMaximum();
                     float value = volumeSlider.getValue() / 100f;
                     float volume = min + (max - min) * value;
                     volumeControl.setValue(volume);
@@ -493,7 +503,7 @@ public class Main {
         if(!levelLoadingTimerStarted) {
             levelLoadingTimerStarted = true;
             System.out.println("Loading Level 1...");
-            timerDelayed(5000, () -> gameState = 1);
+            timerDelayed(5000, () -> {lastLevel = 1; gameState = 1;});
         }
     }
 
@@ -505,7 +515,7 @@ public class Main {
         if(!levelLoadingTimerStarted) {
             levelLoadingTimerStarted = true;
             System.out.println("Loading Level 2...");
-            timerDelayed(5000, () -> gameState = 2);
+            timerDelayed(5000, () -> {lastLevel = 2; gameState = 2;});
         }
     }
 
@@ -517,7 +527,7 @@ public class Main {
         if(!levelLoadingTimerStarted) {
             levelLoadingTimerStarted = true;
             System.out.println("Loading Level 3...");
-            timerDelayed(5000, () -> gameState = 3);
+            timerDelayed(5000, () -> {lastLevel = 3; gameState = 3;});
         }
     }
 
@@ -613,7 +623,32 @@ public class Main {
             g2.setColor(Color.RED);
             g2.setFont(new Font("Arial", Font.BOLD, 80));
 
-            String text = "GAME OVER! YOU FLOODED";
+            String text = "GAME OVER! YOU DROWNED";
+            FontMetrics fm = g2.getFontMetrics();
+            int x = (c.getWidth() - fm.stringWidth(text)) / 2;
+            int y = 300;
+
+            g2.drawString(text, x, y);
+        }
+
+        if (results.equals("LANDSLIDE")) {
+
+            if (!isActionSoundPlayed){
+                stopBGM();
+                actionSound("assets/sounds/gameover.wav");
+                isActionSoundPlayed = true;
+            }
+
+            ImageIcon floodedBackground = new ImageIcon("assets/images/background/main-background.jpg");
+            g2.drawImage(floodedBackground.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
+
+            g2.setColor(new Color(0, 0, 0, 180));
+            g2.fillRect(0, 0, c.getWidth(), c.getHeight());
+
+            g2.setColor(Color.RED);
+            g2.setFont(new Font("Arial", Font.BOLD, 60));
+
+            String text = "YOU GOT CAUGHT IN THE LANDSLIDE!";
             FontMetrics fm = g2.getFontMetrics();
             int x = (c.getWidth() - fm.stringWidth(text)) / 2;
             int y = 300;
@@ -936,6 +971,65 @@ public class Main {
         earthquakeTimer.start();
     }
 
+    static void startLandslides() {
+
+        if (landslidesTimer != null) landslidesTimer.stop();
+
+        landslidesStep = 0;
+        isLandslides = true;
+
+        landslidesTimer = new Timer(2000, e -> {
+            landslidesMap();
+            landslidesStep++;
+        });
+
+        landslidesTimer.start();
+    }
+
+    static void landslidesMap() {
+
+        if (isMapFrozen) return;
+
+        int rows = map.length;
+        int cols = map[0].length;
+
+        int playerRow = playerY / tileSize;
+        int playerCol = playerX / tileSize;
+
+        int s = landslidesStep;
+
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+
+                boolean isOuter = r == rows - 1 - s;
+
+                // r == s -> kalau mau dari atas ke bawah
+                // c == s -> kalau mau dari kiri ke kanan
+                // r == rows - 1 - s -> dari bawah ke atas
+                // c == cols - 1 - s -> dari kanan ke kiri
+ 
+                if (isOuter && map[r][c] != '2') {
+                    map[r][c] = '2'; 
+                    
+                    if (r == playerRow && c == playerCol) {
+
+                        isMapFrozen = true;
+
+                        if (gameTimeTimer != null) gameTimeTimer.stop();
+                        if (landslidesTimer != null) landslidesTimer.stop();
+
+                        isActionSoundPlayed = false;
+                        actionMessage = true;
+                        message = "YOU GOT CAUGHT IN THE LANDSLIDE!";
+                        gameState = 6;
+                        results = "LANDSLIDE";
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
 
     // earthquake map
     static void earthquakeMap() {
@@ -962,49 +1056,49 @@ public class Main {
     }
 
     // flood map
-    static void floodMap() {
+        static void floodMap() {
 
-    if (isMapFrozen) return;
+            if (isMapFrozen) return;
 
-    int rows = map.length;
-    int cols = map[0].length;
+            int rows = map.length;
+            int cols = map[0].length;
 
-    int playerRow = playerY / tileSize;
-    int playerCol = playerX / tileSize;
+            int playerRow = playerY / tileSize;
+            int playerCol = playerX / tileSize;
 
-    int s = floodStep;
+            int s = floodStep;
 
-    for (int r = 0; r < rows; r++) {
-        for (int c = 0; c < cols; c++) {
+            for (int r = 0; r < rows; r++) {
+                for (int c = 0; c < cols; c++) {
 
-            boolean isOuter =
-                r == s ||
-                c == s ||
-                r == rows - 1 - s ||
-                c == cols - 1 - s;
+                    boolean isOuter =
+                        r == s ||
+                        c == s ||
+                        r == rows - 1 - s ||
+                        c == cols - 1 - s;
 
-            if (isOuter && map[r][c] != '2') {
-                map[r][c] = '2'; // jadi air
+                    if (isOuter && map[r][c] != '2') {
+                        map[r][c] = '2'; // jadi air
 
-                // === PLAYER KENA BANJIR ===
-                if (r == playerRow && c == playerCol) {
+                        // === PLAYER KENA BANJIR ===
+                        if (r == playerRow && c == playerCol) {
 
-                    isMapFrozen = true;
+                            isMapFrozen = true;
 
-                    if (gameTimeTimer != null) gameTimeTimer.stop();
-                    if (floodTimer != null) floodTimer.stop();
+                            if (gameTimeTimer != null) gameTimeTimer.stop();
+                            if (floodTimer != null) floodTimer.stop();
 
-                    isActionSoundPlayed = false;
-                    actionMessage = true;
-                    message = "YOU ARE FLOODED!";
-                    gameState = 6;
-                    results = "FLOODED";
-                    return;
+                            isActionSoundPlayed = false;
+                            actionMessage = true;
+                            message = "YOU ARE DROWNED!";
+                            gameState = 6;
+                            results = "FLOODED";
+                            return;
+                        }
+                    }
                 }
             }
         }
-    }
-}
 
 
     //#endregion
@@ -1106,6 +1200,13 @@ public class Main {
             startEarthquake();
         }
 
+        // === LEVEL 3 - EARTHQUAKE ===
+        if (timeLeft == 60 && gameState == 3) {
+            isLandslides = true;
+            warningMessage = true;
+            messageForWarning = "LANDSLIDES! LANDSLIDES!";
+            startLandslides();
+        }
 
         // === TIME UP ===
         if (timeLeft <= 0) {
@@ -1348,7 +1449,7 @@ public class Main {
         }
 
         if (evacuated >= totalEvacuated) {
-            if (gameTimeTimer != null) gameTimeTimer.stop(); // Stop Timer
+            if (gameTimeTimer != null) gameTimeTimer.stop();
             actionMessage = true;
             message = "ALL EMERGENCIES EVACUATED! WELL DONE!";
             if (unlockedLevels == 1) {
@@ -1554,45 +1655,51 @@ public class Main {
     }
 }
 
+        public void resetGame() {
 
-    public void resetGame() {
+            if (menuBGM != null) stopBGM();
+            if (gameTimeTimer != null) gameTimeTimer.stop();
+            if (floodTimer != null) floodTimer.stop();
+            if (earthquakeTimer != null) earthquakeTimer.stop();
+            if (landslidesTimer != null) landslidesTimer.stop();
+            if (countdownTimer != null) countdownTimer.stop();
 
-    if (menuBGM != null) stopBGM();
-    if (gameTimeTimer != null) gameTimeTimer.stop();
-    if (floodTimer != null) floodTimer.stop();
-    if (earthquakeTimer != null) earthquakeTimer.stop();
-    if (countdownTimer != null) countdownTimer.stop();
+            // reset hazards
+            isFlooding = false;
+            isLandslides = false;
+            isMapFrozen = false;
+            floodStep = 0;
+            landslidesStep = 0;
 
-    // reset flood
-    isFlooding = false;
-    isMapFrozen = false;
-    floodStep = 0;
+            // reset gameplay
+            timeLeft = timeLimitSeconds;
+            backpack = 0;
+            evacuated = 0;
+            currentEmergencyIndex = -1;
 
-    // reset gameplay
-    timeLeft = timeLimitSeconds;
-    backpack = 0;
-    evacuated = 0;
-    currentEmergencyIndex = -1;
+            for (int i = 0; i < backpackValue.length; i++) {
+                backpackValue[i] = 0;
+                backpackItems[i] = null;
+            }
 
-    for (int i = 0; i < backpackValue.length; i++) {
-        backpackValue[i] = 0;
-        backpackItems[i] = null;
-    }
+            // reset UI & messages
+            actionMessage = false;
+            warningMessage = false;
+            showMessage = false;
+            messageForWarning = "";
+            message = "";
+            results = "";
 
-    actionMessage = false;
-    warningMessage = false;
-    showMessage = false;
-    messageForWarning = "";
-    message = "";
-    results = "";
+            spawnCharacter();
 
-    // IMPORTANT: reload map
-    loadMap();
-    spawnCharacter();
-    playBGM("assets/sounds/BGMmenu.wav");
-}
+            // 🔥 INI YANG WAJIB
+            level1Inizialized = false;
+            level2Inizialized = false;
+            level3Inizialized = false;
+
+            isCountingDown = true;
+            countdownValue = 3;
+        }
 
     //#endregion
-
-
 }
