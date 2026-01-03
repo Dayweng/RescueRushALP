@@ -159,7 +159,7 @@ public class Main {
                     resetUserDataButton.setVisible(gameState == 10);
                     retryButton.setVisible(gameState == 6 && (results.equals("TIME") || results.equals("FLOODED") || results.equals("LANDSLIDE")));
                     selectLevelButton.setVisible(gameState == 6);
-                    nextLevelButton.setVisible(gameState == 6 && results.equals("SUCCESS"));
+                    nextLevelButton.setVisible(gameState == 6 && results.equals("SUCCESS") && lastLevel != 3);
                     exitLevelButton.setVisible(gameState == 1 || gameState == 2 || gameState == 3);
 
                     //#region Game states
@@ -337,7 +337,7 @@ public class Main {
             // exit level button
             exitLevelButton = createImageButton(
                 "assets/images/buttons/exitLvl button.png",
-                1260, 10, 100, 40,
+                1200, 10, 200, 39,
                 () -> {
                     app.resetGame();
                     gameState = 5;
@@ -680,6 +680,7 @@ public class Main {
             level1Inizialized = true;
             loadCasesFromTXT("assets/data/case/level1-case.txt");
             totalEvacuation();
+            loadTileImages();
             loadMap();
             startCountdown();
         }
@@ -711,6 +712,8 @@ public class Main {
             level2Inizialized = true;
             loadCasesFromTXT("assets/data/case/level2-case.txt");
             totalEvacuation();
+            loadTileImages();
+            loadTileImages();
             loadMap();
             startCountdown();
         }
@@ -742,6 +745,7 @@ public class Main {
             level3Inizialized = true;
             loadCasesFromTXT("assets/data/case/level3-case.txt");
             totalEvacuation();
+            loadTileImages();
             loadMap();
             startCountdown();
         }
@@ -784,25 +788,64 @@ public class Main {
             right1 = javax.imageio.ImageIO.read(new java.io.File("assets/images/character/boy_right_1.png"));
             right2 = javax.imageio.ImageIO.read(new java.io.File("assets/images/character/boy_right_2.png"));
 
-            // tiles
-            grass = javax.imageio.ImageIO.read(new java.io.File("assets/images/house/house1-green-up.png"));
-            water0 = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/water01.png"));
-            waterup = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/water08.png"));
-            waterdown = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/water03.png"));
-            waterleft = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/water06.png"));
-            waterright = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/water05.png"));
-            waterupright = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/water10.png"));
-            waterupleft = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/water11.png"));
-            waterdownright = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/water12.png"));
-            waterdownleft = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/water13.png"));
-            road = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/road00.png"));
-            warningGreen = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-green.png"));
-            warningYellow = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-yellow.png"));
-            warningRed = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-red.png"));
-            warningYellow = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-yellow.png"));
-            warningRed = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-red.png"));
-            earthquakeBlock = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/crate.png"));
-            house1 = javax.imageio.ImageIO.read(new java.io.File("assets/images/house/house1.png"));
+            if (gameState == 2) {
+                grass = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level2/grass01.png"));
+                water0 = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level2/water01.png"));
+                waterup = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level2/water08.png"));
+                waterdown = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level2/water03.png"));
+                waterleft = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level2/water06.png"));
+                waterright = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level2/water05.png"));
+                waterupright = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level2/water10.png"));
+                waterupleft = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level2/water11.png"));
+                waterdownright = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level2/water12.png"));
+                waterdownleft = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level2/water13.png"));
+                road = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level2/road00.png"));
+                warningGreen = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-green.png"));
+                warningYellow = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-yellow.png"));
+                warningRed = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-red.png"));
+                warningYellow = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-yellow.png"));
+                warningRed = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-red.png"));
+                earthquakeBlock = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/crate.png"));
+                house1 = javax.imageio.ImageIO.read(new java.io.File("assets/images/house/house1.png"));
+            } else if (gameState == 3) {
+                grass = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level3/grass01.png"));
+                water0 = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level3/water01.png"));
+                waterup = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level3/water08.png"));
+                waterdown = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level3/water03.png"));
+                waterleft = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level3/water06.png"));
+                waterright = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level3/water05.png"));
+                waterupright = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level3/water10.png"));
+                waterupleft = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level3/water11.png"));
+                waterdownright = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level3/water12.png"));
+                waterdownleft = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level3/water13.png"));
+                road = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level3/road00.png"));
+                warningGreen = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-green.png"));
+                warningYellow = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-yellow.png"));
+                warningRed = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-red.png"));
+                warningYellow = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-yellow.png"));
+                warningRed = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-red.png"));
+                earthquakeBlock = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/crate.png"));
+                house1 = javax.imageio.ImageIO.read(new java.io.File("assets/images/house/house1.png"));
+            } else {
+                grass = javax.imageio.ImageIO.read(new java.io.File("assets/images/house/house1-green-up.png"));
+                water0 = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/water01.png"));
+                waterup = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/water08.png"));
+                waterdown = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/water03.png"));
+                waterleft = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/water06.png"));
+                waterright = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/water05.png"));
+                waterupright = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/water10.png"));
+                waterupleft = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/water11.png"));
+                waterdownright = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/water12.png"));
+                waterdownleft = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/water13.png"));
+                road = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/road00.png"));
+                warningGreen = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-green.png"));
+                warningYellow = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-yellow.png"));
+                warningRed = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-red.png"));
+                warningYellow = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-yellow.png"));
+                warningRed = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-red.png"));
+                earthquakeBlock = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/crate.png"));
+                house1 = javax.imageio.ImageIO.read(new java.io.File("assets/images/house/house1.png"));
+            }
 
         } catch (Exception e) {
             e.printStackTrace();

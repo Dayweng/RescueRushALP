@@ -12,7 +12,7 @@ DESCRIPTION=A first aid kit is found inside a damaged convenience store.
 ITEM_REWARD=FIRST AID
 REQUIRED_ITEM=none
 RESOLVE_TIME_SEC=5
-PATH_IMAGES=assets/images/interactive/warning-green.png
+PATH_IMAGES=assets/images/interactive/gift.png
 
 ---
 

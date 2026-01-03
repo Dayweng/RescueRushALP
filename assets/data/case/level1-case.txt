@@ -24,7 +24,7 @@ ITEM_REWARD=none
 REQUIRED_ITEM=FLASHLIGHT
 EVAC_TYPE=person
 RESOLVE_TIME_SEC=20
-PATH_IMAGES=assets/images/interactive/warning-red.png
+PATH_IMAGES=assets/images/interactive/elderly.png
 
 ---
 
@@ -35,7 +35,7 @@ DESCRIPTION=A life jacket is floating near a flooded street.
 ITEM_REWARD=LIFE JACKET
 REQUIRED_ITEM=none
 RESOLVE_TIME_SEC=5
-PATH_IMAGES=assets/images/interactive/warning-green.png
+PATH_IMAGES=assets/images/interactive/gift.png
 
 
 ---
@@ -48,7 +48,7 @@ ITEM_REWARD=none
 REQUIRED_ITEM=LIFE JACKET
 EVAC_TYPE=person
 RESOLVE_TIME_SEC=20
-PATH_IMAGES=assets/images/interactive/warning-red.png
+PATH_IMAGES=assets/images/interactive/child water.png
 
 ---
 
@@ -59,7 +59,7 @@ DESCRIPTION=Canned food supplies are found in a small shop.
 ITEM_REWARD=FOOD
 REQUIRED_ITEM=none
 RESOLVE_TIME_SEC=5
-PATH_IMAGES=assets/images/interactive/warning-green.png
+PATH_IMAGES=assets/images/interactive/gift.png
 
 ---
 
@@ -70,7 +70,7 @@ DESCRIPTION=Animal food is found near a flooded pet store.
 ITEM_REWARD=PET FOOD
 REQUIRED_ITEM=none
 RESOLVE_TIME_SEC=5
-PATH_IMAGES=assets/images/interactive/warning-green.png
+PATH_IMAGES=assets/images/interactive/gift.png
 
 ---
 
@@ -82,7 +82,7 @@ ITEM_REWARD=none
 REQUIRED_ITEM=none
 EVAC_TYPE=person
 RESOLVE_TIME_SEC=20
-PATH_IMAGES=assets/images/interactive/warning-red.png
+PATH_IMAGES=assets/images/interactive/baby.png
 
 ---
 
@@ -94,7 +94,7 @@ ITEM_REWARD=none
 REQUIRED_ITEM=PET FOOD
 EVAC_TYPE=animal
 RESOLVE_TIME_SEC=15
-PATH_IMAGES=assets/images/interactive/warning-red.png
+PATH_IMAGES=assets/images/interactive/animal.png
 
 ---
 
@@ -105,7 +105,7 @@ DESCRIPTION=Electricity is still active in a flooded house.
 QUESTION=Turn off the electricity?
 CHOICES=YES,IGNORE
 RESOLVE_TIME_SEC=10
-PATH_IMAGES=assets/images/interactive/warning-yellow.png
+PATH_IMAGES=assets/images/interactive/electricity.png
 
 ---
 
@@ -116,4 +116,4 @@ DESCRIPTION=A locked door blocks access to a house affected by flooding.
 QUESTION=Force the door open?
 CHOICES=YES,IGNORE
 RESOLVE_TIME_SEC=10
-PATH_IMAGES=assets/images/interactive/warning-yellow.png
+PATH_IMAGES=assets/images/interactive/locked door.png
