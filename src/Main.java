@@ -1,6 +1,8 @@
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
@@ -38,7 +40,7 @@ public class Main {
     static String messageForWarning = "";
     static boolean warningMessage = false;
 
-    static int timeLimitSeconds = 300;
+    static int timeLimitSeconds = 71;
     static int timeLeft = timeLimitSeconds;
     static Timer gameTimeTimer;
 
@@ -56,7 +58,7 @@ public class Main {
     static int backpack = 0;
     static int[] backpackValue = new int[2];
     static String[] backpackItems = new String[2];
-    static int evacuated = 0;
+    static int evacuated = 6;
     static int totalEvacuated;
 
     static ArrayList<String[]> Emergency = new ArrayList<>();
@@ -113,7 +115,8 @@ public class Main {
     static int level2X = centerX - cardW / 2;
     static int level1X = level2X - cardW - gap;
     static int level3X = level2X + cardW + gap;
-    static int cardsY = (int)(frameHeight * 0.18);
+    static int cardsY = (int)(frameHeight * 0.12);
+
     //Back Button Size & Position
     static int backW = (int)(220 * scale);
     static int backH = (int)(70 * scale);
@@ -136,7 +139,7 @@ public class Main {
             mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             mainFrame.setResizable(false);
             mainFrame.setVisible(true);
-            playBGM("assets/sounds/BGMmenu.wav");
+            playBGM("assets/sounds/BGM.wav");
 
             Main app = new Main();
 
@@ -154,10 +157,10 @@ public class Main {
                     level_1.setVisible(gameState == 5);
                     level_2.setVisible(gameState == 5);
                     level_3.setVisible(gameState == 5);
-                    backButton.setVisible(gameState == 5 || gameState == 10);
+                    backButton.setVisible((gameState == 5 || gameState == 10) && showMessage != true);
                     volumeSlider.setVisible(gameState == 10);
-                    resetUserDataButton.setVisible(gameState == 10);
-                    retryButton.setVisible(gameState == 6 && (results.equals("TIME") || results.equals("FLOODED") || results.equals("LANDSLIDE")));
+                    resetUserDataButton.setVisible(gameState == 10 && showMessage != true);
+                    retryButton.setVisible((gameState == 6 && (results.equals("TIME") || results.equals("FLOODED") || results.equals("LANDSLIDE"))) || (lastLevel == 3 && results.equals("SUCCESS")));
                     selectLevelButton.setVisible(gameState == 6);
                     nextLevelButton.setVisible(gameState == 6 && results.equals("SUCCESS") && lastLevel != 3);
                     exitLevelButton.setVisible(gameState == 1 || gameState == 2 || gameState == 3);
@@ -282,14 +285,17 @@ public class Main {
             // back button
             backButton = createImageButton(
                 "assets/images/buttons/back-button.png",
-                centerX(365), (frameHeight/2)+230, 365, 79,
-                () -> gameState = 4,
+                centerX(365), (frameHeight/2)+210, 365, 79,
+                () -> {
+                    gameState = 4; 
+                    levelUIRefreshed = false;
+                },
                 gamePanel
             );
 
             // retry button
             retryButton = createImageButton(
-                "assets/images/buttons/retry button.png",
+                "assets/images/buttons/retry-button.png",
                 centerX(365), 400, 365, 79,
                 () -> {
                     app.resetGame();
@@ -309,7 +315,7 @@ public class Main {
 
             // select level button
             selectLevelButton = createImageButton(
-                "assets/images/buttons/selectLvl button.png",
+                "assets/images/buttons/select-level-button.png",
                 centerX(365), 500, 365, 79,
                 () -> {
                     app.resetGame();
@@ -324,7 +330,7 @@ public class Main {
 
             // next level button
             nextLevelButton = createImageButton(
-                "assets/images/buttons/nextLvl button.gif",
+                "assets/images/buttons/next-level-button.gif",
                 centerX(365), 400, 365, 79,
                 () -> {
                     app.resetGame();
@@ -336,7 +342,7 @@ public class Main {
 
             // exit level button
             exitLevelButton = createImageButton(
-                "assets/images/buttons/exitLvl button.png",
+                "assets/images/buttons/exit-level-button.png",
                 1200, 10, 200, 39,
                 () -> {
                     app.resetGame();
@@ -349,10 +355,11 @@ public class Main {
             );
 
             resetUserDataButton = createImageButton(
-                "assets/images/buttons/ResetUData button.png",
+                "assets/images/buttons/reset-data-button.png",
                 centerX(365), 500, 365, 79,
                 () -> {
                     resetUserData();
+                    showMessage = true;
                 },
                 gamePanel
             );
@@ -446,6 +453,15 @@ public class Main {
                 }
             });
 
+            gamePanel.addMouseListener(new MouseAdapter() {
+                public void mousePressed(MouseEvent e) {
+                    if (showMessage) {
+                        showMessage = false;
+                        message = "";
+                    }
+                }
+            });
+
             volumeSlider.addChangeListener(e -> {
                 if (volumeControl != null) {
                     float min = volumeControl.getMinimum(); 
@@ -488,7 +504,7 @@ public class Main {
     // main menu screen
     public void MainMenu(Graphics g, Component c) {
 
-        ImageIcon MainMenuBg = new ImageIcon("assets/images/background/main-menu.gif");
+        ImageIcon MainMenuBg = new ImageIcon("assets/images/background/menu-background.gif");
         g.drawImage(MainMenuBg.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
 
         g.setFont(getGameFont(24f));
@@ -497,21 +513,30 @@ public class Main {
         g.drawString("press esc to quit", centerX(180), 670);
     }
 
-    // Setting screen
+    // setting screen
     public void Setting(Graphics g, Component c) {
-        ImageIcon LevelScreenBG = new ImageIcon("assets/images/background/Settingsbg.png");
+        ImageIcon LevelScreenBG = new ImageIcon("assets/images/background/setting-background.png");
         g.drawImage(LevelScreenBG.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
+
+        if (showMessage) {
+            message = "DATA ERASED!! Memories have faded into pixels. Press on, adventurer!";
+            showMessage(g, c, message);
+        }
     }
 
     // select level screen
     public void LevelScreen(Graphics g, Component c) {
         ImageIcon LevelScreenBg = new ImageIcon("assets/images/background/main-background.jpg");
         g.drawImage(LevelScreenBg.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
+
+        if (menuBGM == null) {
+            playBGM("assets/sounds/BGM.wav");
+        }
     }
 
     // Level 1 Loading
     public void level1_loading(Graphics g, Component c) {
-        ImageIcon LoadingL1 = new ImageIcon("assets/images/background/Loading L1.gif");
+        ImageIcon LoadingL1 = new ImageIcon("assets/images/background/loading-L1.gif");
         g.drawImage(LoadingL1.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
         
         if(!levelLoadingTimerStarted) {
@@ -523,7 +548,7 @@ public class Main {
 
     // Level 2 Loading
     public void level2_loading(Graphics g, Component c) {
-        ImageIcon LoadingL2 = new ImageIcon("assets/images/background/Loading L2.gif");
+        ImageIcon LoadingL2 = new ImageIcon("assets/images/background/loading-L2.gif");
         g.drawImage(LoadingL2.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
 
         if(!levelLoadingTimerStarted) {
@@ -535,7 +560,7 @@ public class Main {
 
     // Level 3 Loading
     public void level3_loading(Graphics g, Component c) {
-        ImageIcon LoadingL3 = new ImageIcon("assets/images/background/Loading L3.gif");
+        ImageIcon LoadingL3 = new ImageIcon("assets/images/background/loading-L3.gif");
         g.drawImage(LoadingL3.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
 
         if(!levelLoadingTimerStarted) {
@@ -789,62 +814,58 @@ public class Main {
             right2 = javax.imageio.ImageIO.read(new java.io.File("assets/images/character/boy_right_2.png"));
 
             if (gameState == 2) {
-                grass = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level2/grass01.png"));
-                water0 = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level2/water01.png"));
-                waterup = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level2/water08.png"));
-                waterdown = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level2/water03.png"));
-                waterleft = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level2/water06.png"));
-                waterright = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level2/water05.png"));
-                waterupright = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level2/water10.png"));
-                waterupleft = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level2/water11.png"));
-                waterdownright = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level2/water12.png"));
-                waterdownleft = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level2/water13.png"));
-                road = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level2/road00.png"));
+                grass = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/tile-level2/grass01.png"));
+                waterup = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/tile-level2/water08.png"));
+                waterdown = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/tile-level2/water03.png"));
+                waterleft = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/tile-level2/water06.png"));
+                waterright = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/tile-level2/water05.png"));
+                waterupright = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/tile-level2/water10.png"));
+                waterupleft = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/tile-level2/water11.png"));
+                waterdownright = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/tile-level2/water12.png"));
+                waterdownleft = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/tile-level2/water13.png"));
+                road = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/tile-level2/road00.png"));
                 warningGreen = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-green.png"));
                 warningYellow = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-yellow.png"));
                 warningRed = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-red.png"));
                 warningYellow = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-yellow.png"));
                 warningRed = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-red.png"));
                 earthquakeBlock = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/crate.png"));
-                house1 = javax.imageio.ImageIO.read(new java.io.File("assets/images/house/house1.png"));
             } else if (gameState == 3) {
-                grass = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level3/grass01.png"));
-                water0 = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level3/water01.png"));
-                waterup = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level3/water08.png"));
-                waterdown = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level3/water03.png"));
-                waterleft = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level3/water06.png"));
-                waterright = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level3/water05.png"));
-                waterupright = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level3/water10.png"));
-                waterupleft = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level3/water11.png"));
-                waterdownright = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level3/water12.png"));
-                waterdownleft = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level3/water13.png"));
-                road = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile-level3/road00.png"));
+                grass = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/tile-level3/grass01.png"));
+                water0 = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/tile-level3/water01.png"));
+                waterup = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/tile-level3/water08.png"));
+                waterdown = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/tile-level3/water03.png"));
+                waterleft = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/tile-level3/water06.png"));
+                waterright = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/tile-level3/water05.png"));
+                waterupright = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/tile-level3/water10.png"));
+                waterupleft = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/tile-level3/water11.png"));
+                waterdownright = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/tile-level3/water12.png"));
+                waterdownleft = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/tile-level3/water13.png"));
+                road = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/tile-level3/road00.png"));
                 warningGreen = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-green.png"));
                 warningYellow = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-yellow.png"));
                 warningRed = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-red.png"));
                 warningYellow = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-yellow.png"));
                 warningRed = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-red.png"));
                 earthquakeBlock = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/crate.png"));
-                house1 = javax.imageio.ImageIO.read(new java.io.File("assets/images/house/house1.png"));
             } else {
                 grass = javax.imageio.ImageIO.read(new java.io.File("assets/images/house/house1-green-up.png"));
-                water0 = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/water01.png"));
-                waterup = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/water08.png"));
-                waterdown = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/water03.png"));
-                waterleft = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/water06.png"));
-                waterright = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/water05.png"));
-                waterupright = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/water10.png"));
-                waterupleft = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/water11.png"));
-                waterdownright = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/water12.png"));
-                waterdownleft = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/water13.png"));
-                road = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/road00.png"));
+                water0 = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/tile-level1/water01.png"));
+                waterup = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/tile-level1/water08.png"));
+                waterdown = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/tile-level1/water03.png"));
+                waterleft = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/tile-level1/water06.png"));
+                waterright = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/tile-level1/water05.png"));
+                waterupright = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/tile-level1/water10.png"));
+                waterupleft = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/tile-level1/water11.png"));
+                waterdownright = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/tile-level1/water12.png"));
+                waterdownleft = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/tile-level1/water13.png"));
+                road = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/tile-level1/road00.png"));
                 warningGreen = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-green.png"));
                 warningYellow = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-yellow.png"));
                 warningRed = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-red.png"));
                 warningYellow = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-yellow.png"));
                 warningRed = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-red.png"));
                 earthquakeBlock = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/crate.png"));
-                house1 = javax.imageio.ImageIO.read(new java.io.File("assets/images/house/house1.png"));
             }
 
         } catch (Exception e) {
@@ -1312,7 +1333,7 @@ public class Main {
                 countdownTimer.stop();
                 isCountingDown = false;
                 startGameTimer(); 
-                playBGM("assets/sounds/BGMmenu.wav");
+                playBGM("assets/sounds/BGM.wav");
             }
         });
 
@@ -1359,8 +1380,11 @@ public class Main {
         int textY = boxY;
 
         g2.drawString(message, textX, textY);
-        g2.drawString("1. Take or Save", textX, textY + 50);
-        g2.drawString("2. Close", textX, textY + 75);
+
+        if (gameState != 10){
+            g2.drawString("1. Take or Save", textX, textY + 50);
+            g2.drawString("2. Close", textX, textY + 75);
+        }
     }
 
     // action message function
@@ -1509,7 +1533,7 @@ public class Main {
             if (gameTimeTimer != null) gameTimeTimer.stop();
             actionMessage = true;
             message = "ALL EMERGENCIES EVACUATED! WELL DONE!";
-            if (unlockedLevels == 1) {
+            if (unlockedLevels == 1 || unlockedLevels == 2) {
                 unlockedLevels += 1;
                 saveUserData();
             }
@@ -1622,7 +1646,7 @@ public class Main {
             if (gameFont == null) {
                 gameFont = Font.createFont(
                     Font.TRUETYPE_FONT,
-                    new File("assets/fonts/VT323-Regular.ttf")
+                    new File("assets/fonts/VT323-regular.ttf")
                 );
             }
             return gameFont.deriveFont(size);
@@ -1699,30 +1723,48 @@ public class Main {
 
     static void refreshLevelUI() {
 
-    // LEVEL 2
-    if (unlockedLevels >= 2) {
-        level_2.setIcon(new ImageIcon(
-            "assets/images/buttons/level2-button.png"
-        ));
-    } else {
-        level_2.setIcon(new ImageIcon(
-            "assets/images/buttons/level2-locked.png"
-        ));
+        // LEVEL 2
+        if (unlockedLevels >= 2) {
+            level_2.setIcon(new ImageIcon(
+                "assets/images/buttons/level2-button.png"
+            ));
+        } else {
+            level_2.setIcon(new ImageIcon(
+                "assets/images/buttons/level2-locked.png"
+            ));
+        }
+
+        // LEVEL 3
+        if (unlockedLevels >= 3) {
+            level_3.setIcon(new ImageIcon(
+                "assets/images/buttons/level3-button.png"
+            ));
+        } else {
+            level_3.setIcon(new ImageIcon(
+                "assets/images/buttons/level3-locked.png"
+            ));
+        }
     }
 
-    // LEVEL 3
-    if (unlockedLevels >= 3) {
-        level_3.setIcon(new ImageIcon(
-            "assets/images/buttons/level3-button.png"
-        ));
-    } else {
-        level_3.setIcon(new ImageIcon(
-            "assets/images/buttons/level3-locked.png"
-        ));
-    }
-}
+        static void stopAllSounds() {
+            if (menuBGM != null) {
+                menuBGM.stop();
+                menuBGM.close();
+                menuBGM = null;
+            }
+
+            if (actionSound != null) {
+                actionSound.stop();
+                actionSound.close();
+                actionSound = null;
+            }
+
+            isActionSoundPlayed = false;
+        }
 
         public void resetGame() {
+
+            stopAllSounds();
 
             if (menuBGM != null) stopBGM();
             if (gameTimeTimer != null) gameTimeTimer.stop();
@@ -1741,7 +1783,7 @@ public class Main {
             // reset gameplay
             timeLeft = timeLimitSeconds;
             backpack = 0;
-            evacuated = 0;
+            evacuated = 6;
             currentEmergencyIndex = -1;
 
             for (int i = 0; i < backpackValue.length; i++) {
