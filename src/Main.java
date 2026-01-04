@@ -693,8 +693,6 @@ public class Main {
 
             g2.drawString(text, x, y);
         }
-
-        
     }
 
     // level 1 screen
@@ -734,8 +732,8 @@ public class Main {
 
     // level 2 screen
     public void Level2_Screen(Graphics g, Component c) {
-        ImageIcon bgL2 = new ImageIcon("assets/images/tile/tile-level1/water00.png");
-        g.drawImage(bgL2.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
+        ImageIcon bgL1 = new ImageIcon("assets/images/tile/tile-level1/water00.png");
+        g.drawImage(bgL1.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
         
         if (!level2Inizialized) {
             level2Inizialized = true;
