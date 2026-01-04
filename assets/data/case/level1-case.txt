@@ -8,7 +8,7 @@ DESCRIPTION=A flashlight is found inside an abandoned house.
 ITEM_REWARD=FLASHLIGHT
 REQUIRED_ITEM=none
 RESOLVE_TIME_SEC=5
-PATH_IMAGES=assets/images/interactive/warning-green.png
+PATH_IMAGES=assets/images/interactive/flashlight.png
 
 ---
 
@@ -31,7 +31,7 @@ DESCRIPTION=A life jacket is floating near a flooded street.
 ITEM_REWARD=LIFE JACKET
 REQUIRED_ITEM=none
 RESOLVE_TIME_SEC=5
-PATH_IMAGES=assets/images/interactive/gift.png
+PATH_IMAGES=assets/images/interactive/Life jacket.png
 
 
 ---
@@ -44,7 +44,7 @@ ITEM_REWARD=none
 REQUIRED_ITEM=LIFE JACKET
 EVAC_TYPE=person
 RESOLVE_TIME_SEC=20
-PATH_IMAGES=assets/images/interactive/child water.png
+PATH_IMAGES=assets/images/interactive/kidwater.png
 
 ---
 
@@ -55,7 +55,7 @@ DESCRIPTION=Canned food supplies are found in a small shop.
 ITEM_REWARD=FOOD
 REQUIRED_ITEM=none
 RESOLVE_TIME_SEC=5
-PATH_IMAGES=assets/images/interactive/gift.png
+PATH_IMAGES=assets/images/interactive/emergencyfood.png
 
 ---
 
@@ -66,7 +66,7 @@ DESCRIPTION=Animal food is found near a flooded pet store.
 ITEM_REWARD=PET FOOD
 REQUIRED_ITEM=none
 RESOLVE_TIME_SEC=5
-PATH_IMAGES=assets/images/interactive/gift.png
+PATH_IMAGES=assets/images/interactive/petFood.png
 
 ---
 

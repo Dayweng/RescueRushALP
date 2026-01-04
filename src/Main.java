@@ -40,7 +40,7 @@ public class Main {
     static String messageForWarning = "";
     static boolean warningMessage = false;
 
-    static int timeLimitSeconds = 71;
+    static int timeLimitSeconds = 120;
     static int timeLeft = timeLimitSeconds;
     static Timer gameTimeTimer;
 
@@ -58,7 +58,7 @@ public class Main {
     static int backpack = 0;
     static int[] backpackValue = new int[2];
     static String[] backpackItems = new String[2];
-    static int evacuated = 6;
+    static int evacuated = 0;
     static int totalEvacuated;
 
     static ArrayList<String[]> Emergency = new ArrayList<>();
@@ -174,7 +174,6 @@ public class Main {
                     GAME STATE 4: Main Menu Screen
                     GAME STATE 5: Level Selection Screen
                     GAME STATE 6: Result Screen
-                    GAME STATE 7: Paused Screen (NOT YET IMPLEMENTED)
 
                     GAME STATE 10: Settings Screen
                     GAME STATE 11: Loading Level 1
@@ -343,7 +342,7 @@ public class Main {
             // exit level button
             exitLevelButton = createImageButton(
                 "assets/images/buttons/exit-level-button.png",
-                1200, 10, 200, 39,
+                centerX(200), 675, 200, 39,
                 () -> {
                     app.resetGame();
                     gameState = 5;
@@ -410,7 +409,7 @@ public class Main {
                             isMoving = true;
                         }
                     }
-                    if (key == KeyEvent.VK_ENTER) {
+                    if (key == KeyEvent.VK_SPACE) {
                         if(actionMessage) {
                             actionMessage = false;
                             message = "";
@@ -700,7 +699,9 @@ public class Main {
 
     // level 1 screen
     public void Level1_Screen(Graphics g, Component c) {
-    
+        ImageIcon bgL1 = new ImageIcon("assets/images/tile/tile-level1/water00.png");
+        g.drawImage(bgL1.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
+
         if (!level1Inizialized) {
             level1Inizialized = true;
             loadCasesFromTXT("assets/data/case/level1-case.txt");
@@ -733,6 +734,9 @@ public class Main {
 
     // level 2 screen
     public void Level2_Screen(Graphics g, Component c) {
+        ImageIcon bgL2 = new ImageIcon("assets/images/tile/tile-level1/water00.png");
+        g.drawImage(bgL2.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
+        
         if (!level2Inizialized) {
             level2Inizialized = true;
             loadCasesFromTXT("assets/data/case/level2-case.txt");
@@ -765,7 +769,9 @@ public class Main {
     }
 
     public void Level3_Screen(Graphics g, Component c) {
-
+        ImageIcon bgL3 = new ImageIcon("assets/images/tile/tile-level3/water00.png");
+        g.drawImage(bgL3.getImage(), 0, 0, c.getWidth(), c.getHeight(), c);
+        
         if (!level3Inizialized) {
             level3Inizialized = true;
             loadCasesFromTXT("assets/data/case/level3-case.txt");
@@ -829,7 +835,7 @@ public class Main {
                 warningRed = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-red.png"));
                 warningYellow = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-yellow.png"));
                 warningRed = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/warning-red.png"));
-                earthquakeBlock = javax.imageio.ImageIO.read(new java.io.File("assets/images/interactive/crate.png"));
+                earthquakeBlock = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/tile-level2/rubble.png"));
             } else if (gameState == 3) {
                 grass = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/tile-level3/grass01.png"));
                 water0 = javax.imageio.ImageIO.read(new java.io.File("assets/images/tile/tile-level3/water01.png"));

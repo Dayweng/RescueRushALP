@@ -9,7 +9,7 @@ DESCRIPTION=A landslide warning sign is found near a steep hillside, indicating 
 ITEM_REWARD=WARNING SIGN
 REQUIRED_ITEM=none
 RESOLVE_TIME_SEC=5
-PATH_IMAGES=assets/images/interactive/warning-green.png
+PATH_IMAGES=assets/images/interactive/sign.png
 
 ---
 
@@ -20,7 +20,7 @@ DESCRIPTION=A portable emergency radio is found inside an abandoned guard post.
 ITEM_REWARD=RADIO
 REQUIRED_ITEM=none
 RESOLVE_TIME_SEC=5
-PATH_IMAGES=assets/images/interactive/warning-green.png
+PATH_IMAGES=assets/images/interactive/emerRadio.png
 
 ---
 
@@ -32,7 +32,7 @@ ITEM_REWARD=none
 REQUIRED_ITEM=none
 EVAC_TYPE=person
 RESOLVE_TIME_SEC=25
-PATH_IMAGES=assets/images/interactive/warning-red.png
+PATH_IMAGES=assets/images/interactive/construction under rubble.png
 
 ---
 
@@ -43,7 +43,7 @@ DESCRIPTION=Large cracks appear on the hillside, indicating a potential major la
 QUESTION=Evacuate nearby residents?
 CHOICES=YES,IGNORE
 RESOLVE_TIME_SEC=10
-PATH_IMAGES=assets/images/interactive/warning-yellow.png
+PATH_IMAGES=assets/images/interactive/groundcracks.png
 
 ---
 
@@ -54,7 +54,7 @@ DESCRIPTION=Safety equipment is found near a construction site on the slope.
 ITEM_REWARD=SAFETY GEAR
 REQUIRED_ITEM=none
 RESOLVE_TIME_SEC=5
-PATH_IMAGES=assets/images/interactive/warning-green.png
+PATH_IMAGES=assets/images/interactive/ropeHelmet.png
 
 ---
 
@@ -66,7 +66,7 @@ ITEM_REWARD=none
 REQUIRED_ITEM=SAFETY GEAR
 EVAC_TYPE=person
 RESOLVE_TIME_SEC=30
-PATH_IMAGES=assets/images/interactive/warning-red.png
+PATH_IMAGES=assets/images/interactive/piledDirt.png
 
 ---
 
@@ -78,7 +78,7 @@ ITEM_REWARD=none
 REQUIRED_ITEM=none
 EVAC_TYPE=person
 RESOLVE_TIME_SEC=20
-PATH_IMAGES=assets/images/interactive/warning-red.png
+PATH_IMAGES=assets/images/interactive/elderly.png
 
 ---
 
@@ -89,7 +89,7 @@ DESCRIPTION=Heavy rain is still falling, increasing the risk of secondary landsl
 QUESTION=Stop rescue and retreat to safe zone?
 CHOICES=YES,CONTINUE
 RESOLVE_TIME_SEC=10
-PATH_IMAGES=assets/images/interactive/warning-yellow.png
+PATH_IMAGES=assets/images/interactive/rain.png
 
 ---
 
@@ -100,7 +100,7 @@ DESCRIPTION=A first aid kit is found inside an evacuation tent.
 ITEM_REWARD=FIRST AID
 REQUIRED_ITEM=none
 RESOLVE_TIME_SEC=5
-PATH_IMAGES=assets/images/interactive/warning-green.png
+PATH_IMAGES=assets/images/interactive/firstAidKit.png
 
 ---
 
@@ -112,4 +112,4 @@ ITEM_REWARD=none
 REQUIRED_ITEM=FIRST AID
 EVAC_TYPE=person
 RESOLVE_TIME_SEC=20
-PATH_IMAGES=assets/images/interactive/warning-red.png
+PATH_IMAGES=assets/images/interactive/rescuer.png

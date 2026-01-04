@@ -9,7 +9,7 @@ DESCRIPTION=A first aid kit is found inside a damaged convenience store.
 ITEM_REWARD=FIRST AID
 REQUIRED_ITEM=none
 RESOLVE_TIME_SEC=5
-PATH_IMAGES=assets/images/interactive/gift.png
+PATH_IMAGES=assets/images/interactive/firstAidKit.png
 
 ---
 
@@ -21,7 +21,7 @@ ITEM_REWARD=none
 REQUIRED_ITEM=FIRST AID
 EVAC_TYPE=person
 RESOLVE_TIME_SEC=20
-PATH_IMAGES=assets/images/interactive/warning-red.png
+PATH_IMAGES=assets/images/interactive/injured guy.png
 
 ---
 
@@ -32,7 +32,7 @@ DESCRIPTION=A safety helmet is found near a collapsed construction site.
 ITEM_REWARD=HELMET
 REQUIRED_ITEM=none
 RESOLVE_TIME_SEC=5
-PATH_IMAGES=assets/images/interactive/warning-green.png
+PATH_IMAGES=assets/images/interactive/helmet.png
 
 ---
 
@@ -44,7 +44,7 @@ ITEM_REWARD=none
 REQUIRED_ITEM=HELMET
 EVAC_TYPE=person
 RESOLVE_TIME_SEC=20
-PATH_IMAGES=assets/images/interactive/warning-red.png
+PATH_IMAGES=assets/images/interactive/constructiontrapped.png
 
 ---
 
@@ -55,7 +55,7 @@ DESCRIPTION=Bottled water supplies are found inside an abandoned car.
 ITEM_REWARD=WATER
 REQUIRED_ITEM=none
 RESOLVE_TIME_SEC=5
-PATH_IMAGES=assets/images/interactive/warning-green.png
+PATH_IMAGES=assets/images/interactive/emerWater.png
 
 ---
 
@@ -66,7 +66,7 @@ DESCRIPTION=A whistle is found and can be used to signal trapped victims.
 ITEM_REWARD=WHISTLE
 REQUIRED_ITEM=none
 RESOLVE_TIME_SEC=5
-PATH_IMAGES=assets/images/interactive/warning-green.png
+PATH_IMAGES=assets/images/interactive/whistle.png
 
 ---
 
@@ -78,7 +78,7 @@ ITEM_REWARD=none
 REQUIRED_ITEM=WHISTLE
 EVAC_TYPE=person
 RESOLVE_TIME_SEC=20
-PATH_IMAGES=assets/images/interactive/warning-red.png
+PATH_IMAGES=assets/images/interactive/construction under rubble.png
 
 ---
 
@@ -90,7 +90,7 @@ ITEM_REWARD=none
 REQUIRED_ITEM=WATER
 EVAC_TYPE=person
 RESOLVE_TIME_SEC=15
-PATH_IMAGES=assets/images/interactive/warning-red.png
+PATH_IMAGES=assets/images/interactive/child.png
 
 ---
 
@@ -101,7 +101,7 @@ DESCRIPTION=Strong aftershocks may occur in this area.
 QUESTION=Proceed anyway?
 CHOICES=YES,IGNORE
 RESOLVE_TIME_SEC=10
-PATH_IMAGES=assets/images/interactive/warning-yellow.png
+PATH_IMAGES=assets/images/interactive/hazard.png
 
 ---
 
@@ -112,4 +112,4 @@ DESCRIPTION=A damaged building may collapse at any moment.
 QUESTION=Enter the building?
 CHOICES=YES,IGNORE
 RESOLVE_TIME_SEC=10
-PATH_IMAGES=assets/images/interactive/warning-yellow.png
+PATH_IMAGES=assets/images/interactive/hazard.png
