@@ -1787,7 +1787,7 @@ public class Main {
             // reset gameplay
             timeLeft = timeLimitSeconds;
             backpack = 0;
-            evacuated = 6;
+            evacuated = 0;
             currentEmergencyIndex = -1;
 
             for (int i = 0; i < backpackValue.length; i++) {
