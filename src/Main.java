@@ -9,10 +9,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Random;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.FloatControl;
+import javax.sound.sampled.*;
 import javax.swing.*;
 
 public class Main {
@@ -32,7 +29,7 @@ public class Main {
     static boolean isMoving = false;
     static int spriteCounter = 0;
     static int spriteNum = 1;
-    static int moveSpeed = 4;
+    static int moveSpeed = 16;
 
     static String message = "";
     static boolean showMessage = false;
@@ -135,7 +132,10 @@ public class Main {
             
             //#region window config
             mainFrame.setSize(frameWidth, frameHeight);
+            //fullscreen
             //mainFrame.setExtendedState(mainFrame.getExtendedState() | JFrame.MAXIMIZED_BOTH);
+            //mainFrame.setUndecorated(true);
+            mainFrame.setName("RescueRush");
             mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             mainFrame.setResizable(false);
             mainFrame.setVisible(true);
@@ -342,7 +342,7 @@ public class Main {
             // exit level button
             exitLevelButton = createImageButton(
                 "assets/images/buttons/exit-level-button.png",
-                centerX(200), 675, 200, 39,
+                centerX(200), 670, 200, 39,
                 () -> {
                     app.resetGame();
                     gameState = 5;
@@ -473,9 +473,8 @@ public class Main {
 
             ////#endregion
 
-
             mainFrame.add(gamePanel);
-
+            //Update and repaint timer (Refresh Rate)
             Timer gameTimer = new Timer(16, e -> {
                 updateSprites();
                 gamePanel.repaint();
@@ -1310,7 +1309,7 @@ public class Main {
     gameTimeTimer.start();
 }
 
-    // delayed timer function
+    // delayed timer function (Loading Timer)
     public static void timerDelayed(int delayMs, Runnable action) {
         Timer t = new Timer(delayMs, e -> {
             action.run();
@@ -1398,7 +1397,7 @@ public class Main {
         g2.setFont(getGameFont(32f));
         g2.setColor(Color.RED);
 
-        g2.drawString(message, 20, 100);
+        g2.drawString(message, 700, 30);
     }
 
     // warning meesage function
